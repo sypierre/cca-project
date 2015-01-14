@@ -1,0 +1,114 @@
+%%% D\'ebut du pr\'eambule %%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Options g\'en\'erales du document %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt]{report}	% Classe du document
+
+%%%%%%%%%%%
+% Langues %
+%%%%%%%%%%%
+
+\usepackage[english]{babel}		% Francisation de LaTeX
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Encodage, fontes... %
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{amssymb}
+
+\usepackage{latexsym}
+\usepackage{amsmath,bm}
+%\usepackage{graphicx}
+\usepackage{aeguill}
+\usepackage{aecompl}
+\usepackage{url}
+\usepackage{scribe_MG}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{MnSymbol}
+%\usepackage[lite]{mtpro2}
+ 		% Encodage d'entr\'ee : permet l'utilisation de caract\`eres accentu\'es en entr\'ee
+
+
+\usepackage{graphicx}			% pour les images
+\usepackage{float}
+%%% Fin du pr\'eambule %%%
+\def\ts{\top}
+\def\XX{\mathbf{X}}
+\def\wb{\mathbf{w}}
+\def\xb{\mathbf{x}}
+\def\yb{\mathbf{y}}
+\def\db{\mathbf{d}}
+\def\hb{\mathbf{h}}
+\def\Diag{\text{Diag}}
+
+\def\etab{\boldsymbol \eta}
+
+%%% D\'ebut du document %%%
+
+\begin{document}
+	 
+\scribe{}
+%%\lecturenumber{2}			% required, must be a number
+\hwnumber{1}			% required, must be a 
+%%\lecturedate{October 10}		% required, omit year
+\hwdate{November 25, 2014}		% required, omit year
+
+	
+\maketitle
+
+%	\underline{For your information}\\
+%\BIT
+%\item
+%Email: 
+%\url{shuyu.dong@polytechnique.edu}
+%\EIT
+
+\begin{center}
+\textbf{Joint project with Object recognition and computer vision (RecVis Topic 1.B) - Joint representations for images and text - }
+\end{center}
+
+\paragraph{Main objectif --- Multimodal retrival:} image-to-image search, tag-to-image search, and image-to-tag search. \\
+
+\textbf{Objectif of implementations}: building a retrival pipeline using canonical correlation analysis.
+
+\paragraph{Work plan:} 
+%\subsection{2. Datasets and features} 
+\begin{itemize}
+\item Preparation for implementations: generalities on \textit{word2vec}, \textit{Overfeat} and/or \textit{matconvnet} projects.
+\begin{itemize}
+\item word2vec: ready for feature extraction.
+\item Overfeat: extracted certain features, but don't know if it works right: there are minor errors around \texttt{convert} and jpeg delegate library(to be rectified if possible).
+\item matconvnet: ready for feature extraction.
+\end{itemize} 
+\item Theory studies on graphical models around CCA: according to the paper [1], from two-view CCA to three-view CCA with the third view from semantic/ground truth features.
+
+\begin{itemize}
+\item[-] In case of complete absence of ground truth category for some images: recovering absente topics by cluster-based information retrival on tag features.
+\end{itemize}
+\item Feature extraction: CNN features using \textit{Overfeat} or \textit{matconvnet}; text features using \textit{word2vec}.
+\begin{itemize}
+\item[-] Bibliographic search on related works: features that are used in the article[1](besides CNN features) and in other related works.
+\item[-] Experiments on the pertinence of similarity measures used in references. Find potential mistakes/problems in feature extraction.
+\end{itemize}
+\item Implemente a retrival system using the two-view and three-view CCAs based on the computed features; compare the performances. 
+
+\end{itemize}
+
+
+
+
+
+
+
+
+\end{document}
+%%% Fin du document %%%
+	
