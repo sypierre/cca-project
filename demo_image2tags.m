@@ -1,41 +1,11 @@
 %pipeline image2tags
-% addpath('./structures');
-% addpath('feature_processing/');
-% addpath('I2T2I/');
-% addpath('text_tags/');
-% addpath('text_vectors/');
-% addpath('./data');
-% t1 = tic;
-% if ~exist('dictionary_inriaPBA')
-% %     load('4class_dictionary_inria.mat');
-%     load('dictionary_inriaPBA.mat');
-% end
-% t2 = toc(t1);
-% % break;
-% clearvars -except dictionary_inriaPBA;
-% close all;
-%
-% addpath('./matconvnet-1.0-beta7/matlab');
-% run vl_setupnn;
-%
-% net = load('imagenet-vgg-f.mat');
-%
-% root_textvectors = './text_vectors/'; % dictionary of word2vec vectors
-% root_texttags = './text_tags/inria_tagbtexts/'; % tags of images with <tagname> id
-% inria_image = './data/webqueries/images/';
-% % ----------------------------------------------------------
-% disp('loading class features..');
-% load('cca_Tclass.mat' );
-% load('cca_Vclass.mat');
-% load('cca_Tclasss.mat'); % T_class_features
-% load('4class_namelist.mat');
 
-% break; end of old start settings
 % --------------------NEW START SETTINGS -------------------
 %% % 01:50 - integrated addpaths into <~>
+
+opt.window2 = 1;
 if ~ exist('net', 'var')
-    
-demo_ADDPATHS3; %2
+    demo_ADDPATHS3( opt ) ; %2
 break;
 end
 
@@ -153,7 +123,7 @@ opt.occ = 6;       % control the amount of retrieved text
 opt.nwords_display = opt.occ; % replace the historic ~.occ
 opt.I2T = 1;
  opt.periodic = 0;
- opt.window2 = 1; % Tfeature is in window 2 mode
+%  opt.window2 = 1; % Tfeature is in window 2 mode
  
  opt.i2i = 0;
  i2tcontrol = [0 0 43];
