@@ -10,7 +10,7 @@ if ~ exist('inriaPBA', 'var')
     load('dictionary_inriaPBA.mat');
     addpath('./matconvnet-1.0-beta7/matlab');
     run vl_setupnn;
-    addpath('./data');
+    addpath('./inria_objects');
     net = load('imagenet-vgg-f.mat');
 end
 tl = toc(t1);
@@ -20,12 +20,15 @@ addpath('./structures');
 addpath('./feature_processing');
 addpath('./I2T2I');
  addpath('./inria_obj_features');
-addpath('./inria_objects');
+% addpath('./inria_objects');
 addpath('./inria_I2T2I_display');
 addpath('./inria_results');
 
 disp('loading feature archives...');
-load('inria_objf-tfeaturesi.mat');
+
+load('inria_objf-tfeaturesi.mat'); % T : Nz1401
+load('inria_objf-2tfeaturesi.mat');
+
 load('inria_objf-vfeaturesi.mat');
 load('inria_objf-vfeatsi.mat');
 
