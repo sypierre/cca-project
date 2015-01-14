@@ -4,29 +4,34 @@
 %% % 01:50 - integrated addpaths into <~>
 
 opt.window2 = 1;
-if ~ exist('net', 'var')
-    demo_ADDPATHS3( opt ) ; %2
-break;
+if opt.window2
+    disp('phrased textual vectors...');
+else
+    disp('not phrased textual vectors...');
 end
 
-% break;
-% used to be <dictionary_inriaPBA> / following loads in <demo_ADDPATHS3.m>
-% load('inria_objf-tfeatures.mat');
-% load('inria_objf-vfeatures.mat');
-% load('inria_objf-tfeaturesall.mat');
-% load('inria_objf-vfeaturesall.mat');
-%
-% load('inria_objf20_nobad.mat');
-% load('inria_objfi-classind.mat');
+if ~ exist('net', 'var')
+    demo_ADDPATHS3;
+    %---------- One of the 2 suffices
+    if opt.window2
+        load('inria_objf-2tfeaturesi.mat');
+        % matObj = matfile('inria_objf-vfeatsi.mat');
+        % whos(matObj)
+    else
+        load('inria_objf-tfeaturesi.mat');
+    end
+    break;
+end
+
+
 
 clearvars -except inriaPBA et net et inria_lobj et tagwords et...
     inria_objf et inria_objfv et Vfeature et ...
     inria_objft et Tfeature et inria_objfi et ...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
     mux et mut Vfeat et semantic;
-
 close all;
-% break;
+
 inria_imgdir = './data/webqueries/images/';
 root_textvectors = './text_vectors/'; % dictionary of word2vec vectors
 root_texttags{1} = './text_tags/inria_tagptexts/'; % tags of images with <tagname> id
@@ -70,7 +75,7 @@ tmpT = Tfeature(idx_realtrain, : );
 id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
 for k = 1 : length(opt.observ)
-querie_classes{k} = semantic{opt.observ(k) + 1};
+    querie_classes{k} = semantic{opt.observ(k) + 1};
 end
 %% NSS
 disp('creating nss...');
@@ -105,10 +110,10 @@ if opt.docca %|| ~exist('X')
     t1 = tic;
     [X,T,Wx,W,Ds,D,Z , mux,mut] = CCA_IMTnew(ccaV,ccaT,opt);
     tcca = toc(t1);
-    disp(['CCA time : ', num2str(tcca)]);    
+    disp(['CCA time : ', num2str(tcca)]);
     
     save([root_resultsNEW,'cca_0-300_2tv1000-d',int2str(opt.d),'.mat'],...
-          'X','T','Wx','W','Ds','D','Z','mux','mut');
+        'X','T','Wx','W','Ds','D','Z','mux','mut');
 else
     if ~ exist('Z', 'var')
         load('cca_readyNEW.mat');
@@ -122,11 +127,11 @@ opt.Nss = nss;     % decoupage des images/texts de chaque classe
 opt.occ = 6;       % control the amount of retrieved text
 opt.nwords_display = opt.occ; % replace the historic ~.occ
 opt.I2T = 1;
- opt.periodic = 0;
+opt.periodic = 0;
 %  opt.window2 = 1; % Tfeature is in window 2 mode
- 
- opt.i2i = 0;
- i2tcontrol = [0 0 43];
+
+opt.i2i = 0;
+i2tcontrol = [0 0 43];
 opt.randomi2t = i2tcontrol(1);
 opt.cl = i2tcontrol(2);
 opt.imreq = i2tcontrol(3);%216;%350;     % % (2,114: hotel,valet,~; hotel,~)
@@ -165,72 +170,72 @@ requestname = request_name(nsst,inria_imgdir, inria_objfi, opt);
 if opt.I2T % opt.~
     x = image2cnnNEW(requestname,opt);
     disp(requestname);
-% TEMPORARY TRY
-  
-  if ~ opt.i2i
-    sims = simI2T(x,T,W,D.^opt.pd);
-  else
+    % TEMPORARY TRY
+    
+    if ~ opt.i2i
+        sims = simI2T(x,T,W,D.^opt.pd);
+    else
         sims = simI2I(x,X,W,D.^opt.pd);
-  end
-  % DISPLAY ranked Images:
+    end
+    % DISPLAY ranked Images:
     [inds, xx, ranknames] = display_i2it_imgranks(sims,ccaT,inria_objf, opt);
     figure(101) ; clf ; set(101,'name','ranked training images (subset)') ;
     displayRankedImageList( ranknames, sims(inds(1:opt.i2iN)));
     saveas(figure(101), [root_fig,'ranksI2IT.png']);
     saveas(figure(100), [root_fig,'ranksI2IT-r.png']);
-   % DISPLAY ranked Texts:
-   [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
-       Image2TextsNEW(inria_objf, xx,opt);
-   plotI2Tnew( pool_sel, occd, inria_imgdir, requestname, opt );
-   
-   
-% END of temporary try
-%     break;
-%     [responses,indx,occd,occ, pool,inds,sims] = Image2Texts(x, T , W, D,simI2T,T_class,opt);
-%     listj = plotI2T(responses, cl_request,id_class,T_class,im_request);
-   
-
-% FIND LABELS
+    % DISPLAY ranked Texts:
+    [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
+        Image2TextsNEW(inria_objf, xx,opt);
+    plotI2Tnew( pool_sel, occd, inria_imgdir, requestname, opt );
+    
+    
+    % END of temporary try
+    %     break;
+    %     [responses,indx,occd,occ, pool,inds,sims] = Image2Texts(x, T , W, D,simI2T,T_class,opt);
+    %     listj = plotI2T(responses, cl_request,id_class,T_class,im_request);
+    
+    
+    % FIND LABELS
     xx_cls = []; scores = sims( inds(1:opt.i2iN) );
     for i = 1 : length(xx)
         xx_cls(i) = inria_objf{ xx(i) }.id_class;
         labels(i) =2*( xx_cls(i) == opt.cl ) - 1;
     end
-   figure(102) ;  %set(2,'name','precision-recall on train data') ;
-   vl_pr(labels, scores);
-   
-   saveas( figure(102), [root_fig,'I2I-APRnew.png']);
-
-
-
-
-
-
-
-
-
-% ACTUAL END
-
+    figure(102) ;  %set(2,'name','precision-recall on train data') ;
+    vl_pr(labels, scores);
+    
+    saveas( figure(102), [root_fig,'I2I-APRnew.png']);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    % ACTUAL END
+    
 else
     %     tt_request = {'arc','de','triomphe'};
     tt_request = input('Please input your request key words:\n','s');
     tt_request = string2words(tt_request);
-        tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector
-%     break;
-
-%      [responses,inds,indpool,sims] = Texts2Image(X, tt_request,inria, W, D,simT2I,opt);
-%      % responses: a list of image names
-%      plotT2I(responses,tt_request);
+    tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector
+    %     break;
     
-     % NEW T2I
-     
-     sims_t2i = simT2I(X,tvec,W,D);
-%      break;
+    %      [responses,inds,indpool,sims] = Texts2Image(X, tt_request,inria, W, D,simT2I,opt);
+    %      % responses: a list of image names
+    %      plotT2I(responses,tt_request);
+    
+    % NEW T2I
+    
+    sims_t2i = simT2I(X,tvec,W,D);
+    %      break;
     [inds, xx, ranknames] = display_i2it_imgranks(sims_t2i,ccaT,inria_objf, opt);
-     figure(300) ; clf ; set(300,'name','ranked training images (subset)') ;
-     displayRankedImageList( ranknames, sims_t2i(inds(1:opt.i2iN)));
-     saveas(figure(300), [root_fig,'ranksT2I.png']);
-     % END of NEW T2I
+    figure(300) ; clf ; set(300,'name','ranked training images (subset)') ;
+    displayRankedImageList( ranknames, sims_t2i(inds(1:opt.i2iN)));
+    saveas(figure(300), [root_fig,'ranksT2I.png']);
+    % END of NEW T2I
     
 end
 

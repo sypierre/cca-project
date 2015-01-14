@@ -1,9 +1,11 @@
 
-function demo_ADDPATHS3(opt)
+% demo_ADDPATHS3
 
 setup;
 % demo_ADDPATHS;
+if ~ exist('./data/webqueries/images', 'dir')
 addpath('./data/webqueries/images');
+end
 
 t1 = tic;
     load('dictionary_inriaPBA.mat');
@@ -13,7 +15,7 @@ t1 = tic;
     net = load('imagenet-vgg-f.mat');
 tl = toc(t1);
 
-addpath('./structures');
+% addpath('./structures');
 addpath('./feature_processing');
 addpath('./I2T2I');
  addpath('./inria_obj_features');
@@ -22,14 +24,6 @@ addpath('./inria_I2T2I_display');
 addpath('./inria_results');
 
 disp('loading feature archives...');
-%---------- One of the 2 suffices
-if opt.window2
-load('inria_objf-2tfeaturesi.mat'); 
-% matObj = matfile('inria_objf-vfeatsi.mat');
-% whos(matObj)
-else
-load('inria_objf-tfeaturesi.mat'); 
-end
 
 %-----------
 load('inria_objf-vfeaturesi.mat'); % 4096 + 1 ! 
@@ -47,4 +41,3 @@ load('inria_objf_nobad.mat');
 load('inria_objfi-classind.mat');
 load('inria_semantics.mat');
 
-end
