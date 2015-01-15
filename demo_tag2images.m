@@ -9,21 +9,22 @@ end
 if ~ exist('net', 'var')
     demo_ADDPATHS3;
     %---------- One of the 2 suffices
-    if opt.window2
-        load('inria_objf-2tfeaturesi.mat');
+    
+      tph = load('inria_objf-2tfeaturesi.mat');
+      Tfeat2 = tph.Tfeature;
         % matObj = matfile('inria_objf-vfeatsi.mat');
         % whos(matObj)
-    else
-        load('inria_objf-tfeaturesi.mat');
-    end
+    
+       ts = load('inria_objf-tfeaturesi.mat');
+       Tfeat1 = ts.Tfeature;
     break;
 end
 
 clearvars -except inriaPBA et net et inria_lobj et tagwords et...
-    inria_objf et inria_objfv et Vfeature et ...
-    inria_objft et Tfeature et inria_objfi et idx_bad et idx_badT et...
+    inria_objf et inria_objfv et Vfeature et Vfeat et ...
+    inria_objft et Tfeat2 et Tfeat1 et inria_objfi et idx_bad et idx_badT et...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
-    Vfeat et semantic;
+    semantic;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -56,12 +57,13 @@ partial = 1;
 idx_realtrain = idx_train(1: fix(NT/partial) );
 % END OF create train set
 
-opt.trainall = 1;
+opt.trainall = 0;
 opt.v1000 = 1;
-opt.window2 = 1;
+opt.window2 = 0;
 opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
+opt.docca = 0;
 
-id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
+id_class = [0 : 100];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 for k = 1 : length(opt.observ)
     querie_classes{k} = semantic{opt.observ(k) + 1};
 end
@@ -74,6 +76,11 @@ NSS = [];
 
 for k = 1 : length(id_class)
     NSS = [NSS; nss{ id_class(k)+1 }];
+end
+if opt.window2
+    Tfeature = Tfeat2;
+else
+    Tfeature = Tfeat1;
 end
 if opt.v1000
     VF = Vfeat;
@@ -99,8 +106,6 @@ opt.d = 300; %400,200;100;%10; %10 3 20 dimension of the latent variable z
 opt.classes = querie_classes;
 opt.cano_vs = [1,2]; % canonical direction ids
 
-
-opt.docca = 0;
 if opt.docca %|| ~exist('X')
     
     disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
@@ -174,6 +179,8 @@ requestname = request_name(nsst,inria_imgdir, inria_objfi, opt);
      displayRankedImageList( ranknames, sims_t2i(inds(1:opt.i2iN)));
      saveas(figure(300), [root_fig,'ranksT2I.png']);
      % END of NEW T2I
-    
+%     rho = 0;
+%     for i = 1 : length(xx)
+%         rho = rho + inria_objf{ xx(i) }.id_class == 
 
 

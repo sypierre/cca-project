@@ -4,7 +4,7 @@ function [inds, xx, ranknames] = display_i2it_imgranks(sims,tmppT,inria_objf, op
     ninds = find( isnan(sims) );
     sims(ninds) = - Inf(1,length(ninds));
     [~, inds] = sort(sims,'descend');
-    opt.i2iN = 36;
+%     opt.i2iN = 36;
     
     xx = tmppT(inds(1: opt.i2iN),end); % absolute line values!
     %inria_objf{xx(1:20)}
