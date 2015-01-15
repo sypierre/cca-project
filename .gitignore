@@ -6,3 +6,26 @@
 *.m~
 
 *.png
+
+PGM-report/MVA_PP_ShuyuDONG.pdf
+
+*.aux
+
+*.blg
+
+*.brf
+
+*.bbl
+
+*.log
+
+*.out
+
+*.pdf
+
+*.gz
+
+*.sty
+
+
+PGM-report/Report_PGMproject - proposal.tex
