@@ -14,24 +14,25 @@ if ~ exist('net', 'var')
     demo_ADDPATHS3;
     %---------- One of the 2 suffices
     
-      tph = load('inria_objf-2tfeaturesi.mat');
-      Tfeat2 = tph.Tfeature;
-        % matObj = matfile('inria_objf-vfeatsi.mat');
-        % whos(matObj)
+    tph = load('inria_objf-2tfeaturesi.mat');
+    Tfeat2 = tph.Tfeature;
+    % matObj = matfile('inria_objf-vfeatsi.mat');
+    % whos(matObj)
     
-       ts = load('inria_objf-tfeaturesi.mat');
-       Tfeat1 = ts.Tfeature;
+    ts = load('inria_objf-tfeaturesi.mat');
+    Tfeat1 = ts.Tfeature;
     break;
 end
 
-clearvars -except inriaPBA et net et inria_lobj et tagwords et...
-    inria_objf et inria_objfv et Vfeature et Vfeat et ...
-    inria_objft et Tfeat2 et Tfeat1 et inria_objfi et idx_bad et idx_badT et...
-    idx_bads et idx_goods et X et T et Wall et W et Dall et D et Z et ...
-    semantic et cls;
+clearvars -except inriaPBA net inria_lobj tagwords ...
+    inria_objf inria_objfv Vfeature  Vfeat ...
+    inria_objft Tfeat2  Tfeat1 inria_objfi idx_bad  idx_badT ...
+    idx_bads  idx_goods  X  T  Wall  W  Dall  D  Z  ...
+    semantic  cls  Wx  Wy  LAM Zw  invU ;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
+opt.imgdir = inria_imgdir;
 root_textvectors = './text_vectors/'; % dictionary of word2vec vectors
 root_texttags{1} = './text_tags/inria_tagptexts/'; % tags of images with <tagname> id
 root_texttags{2} = './text_tags/inria_tagbtexts/'; % tags of images with <tagname> id
@@ -64,23 +65,25 @@ idx_realtrain = idx_train(1: fix(NT/partial) );
 opt.trainall = 0;
 opt.v1000 = 1;
 opt.window2 = 0;
-opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
+
 opt.docca = 0;
- opt.d = 300; %400,200;100;%10; %10 3 20 dimension of the latent variable z
- opt.cano_vs = [1,2]; % canonical direction ids
+opt.d = 300; %400,200;100;%10; %10 3 20 dimension of the latent variable z
+opt.cano_vs = [1,2]; % canonical direction ids
 
 opt.I2T = 1;
 opt.periodic = 0;
 opt.i2i = 0;
-
-opt.EVA = 1;
-
-for k = 1 : length(opt.observ)
-    opt.classes{k} = semantic{opt.observ(k) + 1};
+i2tcontrol = [0 0 43]; % 57
+opt.oldZ = 1;
+opt.EVA = 0;  opt.EVA1 = 1; opt.EVA2 = 100;
+if ~ opt.EVA
+    opt.EVA1 = 1;
+    opt.EVA2 = 1;
 end
+opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
 
 %% NSS
-id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
+id_class = [0 : 355];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 disp('creating nss...');
 % nss contains the absolute line information about the classes_observe !
 % nss{class id + 1} = line id !
@@ -88,7 +91,7 @@ disp('creating nss...');
 NSS = [];
 
 for k = 1 : length(id_class)
-    NSS = [NSS; nss{ id_class(k)+1 }];
+    NSS = [NSS; nss{ id_class(k)+1 }]; % nss{id_class(k)+1} may be empty
 end
 if opt.window2
     TF = Tfeat2;
@@ -100,12 +103,12 @@ if opt.v1000
 else
     VF = Vfeature;
 end
-
+% break;
 %% choose CCA's 2 views
 
 if ~ opt.trainall
-ccaV = VF(NSS,:); % line classment re-ordered by class id!!
-ccaT = TF(NSS, :);
+    ccaV = VF(NSS,:); % line classment re-ordered by class id!!
+    ccaT = TF(NSS, :);
 else
     ccaV = VF(idx_realtrain, : );
     ccaT = TF(idx_realtrain, : );
@@ -117,25 +120,20 @@ if opt.docca %|| ~exist('X')
     disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
     
     t1 = tic;
-    if 1
-    [X,T,Wall,W,Dall,D,Z ] = CCA_IMTnew(ccaV,ccaT,opt);
-    else
-    [nX,nT, nWx, nWy,nLAM,ninvU, nW, nDall,nD,nZ] = newCCA_IMTnew(ccaV,ccaT,opt);
-    end
+    [X,T, Wx, Wy, LAM, Zw, invU, W , Dall, D, Z] = newCCA_IMTnew(ccaV,ccaT,opt);
+    
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
-    save([root_resultsNEW,'cca_0-300_2tv1000-d',int2str(opt.d),'.mat'],...
-        'X','T','Wall','W','Dall','D','Z');
-else
-    if ~ exist('Z', 'var')
-%         load('cca_readyNEW.mat');
-    end
+    save([root_resultsNEW,'NEWcca_ALL_tv1000-d',int2str(opt.d),'.mat'],...
+        'X','T','Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
+
+    plot_ccaNEW(nss,Z, Zw, opt, 1, semantic);
+
 end
-%plot_ccaNEW(nss,Z,opt);
 
 % break;
-%% EVA 
+%% EVA
 opt.maxpool = 20;  % control the amount of candiate words
 opt.Nss = nss;     % decoupage des images/texts de chaque classe
 opt.occ = 6;       % control the amount of retrieved text
@@ -143,12 +141,12 @@ opt.nwords_display = opt.occ; % replace the historic ~.occ
 
 opt.randomi2t = i2tcontrol(1);
 opt.imreq = i2tcontrol(3);%216;%350;     % % (2,114: hotel,valet,~; hotel,~)
- % (9/211 ~ 179/109 -- good)
+% (9/211 ~ 179/109 -- good)
 % (19/434 ~ computer, keyboard -- good!)
 % (19/208 ~ mont blanc ---good !)
 % (19/203 ~ mont blanc ---good !!)
 % (0/346 ~ )
-% (0/43, 8 ~ )
+% (0/43, 8 ,30(100%P@36!)~ )
 % (99/539,135 ~ i2t very good !! )
 % (20/128 montst good!)
 opt.external_image = 0;
@@ -169,105 +167,111 @@ simI2I = @(xq,x,W ) (xq*W{1})*(x*W{1})' ./...
 
 opt.i2iN = 36;
 
-for ee = 7 : 100
-
-i2tcontrol = [1 cls(ee) 43];
-
-
-%% Image-text retrieval
-opt.cl = i2tcontrol(2);
-
-if ~ opt.EVA
-[requestname, abslines] = request_nameNEW(nsst,inria_imgdir, inria_objfi, opt);
-NN = 1;
-requestnames = {requestname};
-else
-    [requestnames,abslines] = request_nameEVA(nsst,inria_imgdir, inria_objfi, opt);
-    NN = length(requestnames);
-end
-    
-% break;
-if opt.I2T % opt.~
-        rho = 0;
-    
-    for nn = 1 : NN
-    
-    x = image2cnnNEW(abslines(nn), VF, opt);
-    disp(['-------- ',requestnames{nn}]);
-
-    % TEMPORARY TRY
-    if ~ opt.i2i
-%         sims = simI2T(x,T,W,D) ; 
-         % using Z{2}
-          ZT = Z{2}(:,1:opt.d);
-        sims = (x*W{1})*(ZT') ./...
-    ( norm(x*W{1}) * sqrt(sum( ZT.*ZT ,2 )') ); % ZT.*ZT wrong!!
-         % END of using Z{2}
-         
-    else
-        sims = simI2I(x,X,W,D) ; 
+for ee = opt.EVA1 : opt.EVA2
+    if opt.EVA
+        i2tcontrol(2) = cls(ee); % = [1 cls(ee) 43];
     end
-    % DISPLAY ranked Images:
-    [inds, xx, ranknames] = display_i2it_imgranks(sims,ccaT,inria_objf, opt);
+    
+    %% Image-text retrieval
+    opt.cl = i2tcontrol(2);
+    
     if ~ opt.EVA
-    figure(101) ; clf ; set(101,'name','ranked training images (subset)') ;
-    displayRankedImageList( ranknames, sims(inds(1:opt.i2iN)));
-    saveas(figure(101), [root_fig,'ranksI2IT.png']);
-    saveas(figure(100), [root_fig,'ranksI2IT-r.png']);
-%     end
-    %%DISPLAY ranked Texts:
-%     if ~ opt.EVA
-    [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
-        Image2TextsNEW(inria_objf, xx,opt);
-    plotI2Tnew( pool_sel, occd, inria_imgdir, requestnames{nn}, opt );
+        [requestname, abslines] = request_nameNEW(nsst,inria_imgdir, inria_objfi, opt);
+        NN = 1;
+        requestnames = {requestname};
+    else
+        [requestnames,abslines] = request_nameEVA(nsst,inria_imgdir, inria_objfi, opt);
+        NN = length(requestnames);
     end
     
-    % END of temporary try
-    %     break;
-    %     [responses,indx,occd,occ, pool,inds,sims] = Image2Texts(x, T , W, D,simI2T,T_class,opt);
-    %     listj = plotI2T(responses, cl_request,id_class,T_class,im_request);
-    
-    
-    % FIND LABELS
-% %     xx_cls = []; scores = sims( inds(1:opt.i2iN) );
-% %     for i = 1 : length(xx)
-% %         xx_cls(i) = inria_objf{ xx(i) }.id_class;
-% %         labels(i) =2*( xx_cls(i) == opt.cl ) - 1;
-% %     end
-% %     figure(102) ;  %set(2,'name','precision-recall on train data') ;
-% %     vl_pr(labels, scores);
-    
-% %     saveas( figure(102), [root_fig,'I2I-APRnew.png']);
-    
-     for i = 1 : length(xx)
-         rho = rho + ( inria_objf{ xx(i) }.id_class == opt.cl );
-     end    
+    % break;
+    if opt.I2T % opt.~
+        rho = 0;
+        
+        for nn = 1 : NN
+            
+            x = image2cnnNEW(abslines(nn),requestnames{nn}, VF, opt);
+            disp(['-------- ',requestnames{nn}]);
+            
+            % TEMPORARY TRY
+            if ~ opt.i2i
+                %         sims = simI2T(x,T,W,D) ;
+                % using Z{2}
+                if opt.oldZ
+                    ZT = Z{2}(:,1:opt.d);
+                    WW = W{1};
+                else
+                    ZT = Zw{2}(:,1:opt.d);
+                    WW = Wx(:,1:opt.d);
+                end
+                sims = (x*WW)*(ZT') ./...
+                    ( norm(x*WW) * sqrt(sum( ZT.*ZT ,2 )') ); % ZT.*ZT wrong!!
+                % END of using Z{2}
+                
+            else
+                sims = simI2I(x,X,W,D) ;
+            end
+            % DISPLAY ranked Images:
+            [inds, xx, ranknames] = display_i2it_imgranks(sims,ccaT,inria_objf, opt);
+            if ~ opt.EVA
+                figure(101) ; clf ; set(101,'name','ranked training images (subset)') ;
+                displayRankedImageList( ranknames, sims(inds(1:opt.i2iN)));
+                saveas(figure(101), [root_fig,'ranksI2IT.png']);
+                saveas(figure(100), [root_fig,'ranksI2IT-r.png']);
+                %     end
+                %%DISPLAY ranked Texts:
+                %     if ~ opt.EVA
+                [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
+                    Image2TextsNEW(inria_objf, xx,opt);
+                plotI2Tnew( pool_sel, occd, inria_imgdir, requestnames{nn}, opt );
+            end
+            
+            % END of temporary try
+            %     break;
+            %     [responses,indx,occd,occ, pool,inds,sims] = Image2Texts(x, T , W, D,simI2T,T_class,opt);
+            %     listj = plotI2T(responses, cl_request,id_class,T_class,im_request);
+            
+            
+            % FIND LABELS
+            % %     xx_cls = []; scores = sims( inds(1:opt.i2iN) );
+            % %     for i = 1 : length(xx)
+            % %         xx_cls(i) = inria_objf{ xx(i) }.id_class;
+            % %         labels(i) =2*( xx_cls(i) == opt.cl ) - 1;
+            % %     end
+            % %     figure(102) ;  %set(2,'name','precision-recall on train data') ;
+            % %     vl_pr(labels, scores);
+            
+            % %     saveas( figure(102), [root_fig,'I2I-APRnew.png']);
+            
+            for i = 1 : length(xx)
+                rho = rho + ( inria_objf{ xx(i) }.id_class == opt.cl );
+            end
+        end
+        rho = rho/(NN*opt.i2iN);
+        disp( ['query_',int2str(cls(ee)),': P@36 = ',num2str(rho)]);
+        if opt.EVA
+            save([root_resultsNEW, 'EVA-I2I-cl',int2str(opt.cl),'.mat'],'rho','NN','opt');
+        end
+        
+        
+        
+    else
+        %     tt_request = {'arc','de','triomphe'};
+        tt_request = input('Please input your request key words:\n','s');
+        tt_request = string2words(tt_request);
+        tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector
+        
+        % NEW T2I
+        
+        sims_t2i = simT2I(X,tvec,W,D);
+        %      break;
+        [inds, xx, ranknames] = display_i2it_imgranks(sims_t2i,ccaT,inria_objf, opt);
+        figure(300) ; clf ; set(300,'name','ranked training images (subset)') ;
+        displayRankedImageList( ranknames, sims_t2i(inds(1:opt.i2iN)));
+        saveas(figure(300), [root_fig,'ranksT2I.png']);
+        % END of NEW T2I
+        
     end
-         rho = rho/(NN*opt.i2iN);
-         disp( ['query_',int2str(cls(ee)),': P@36 = ',num2str(rho)]);
-         if opt.EVA
-             save([root_resultsNEW, 'EVA-I2I-cl',int2str(opt.cl),'.mat'],'rho','NN','opt');
-         end
-
     
     
-else
-    %     tt_request = {'arc','de','triomphe'};
-    tt_request = input('Please input your request key words:\n','s');
-    tt_request = string2words(tt_request);
-    tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector
-    
-    % NEW T2I
-    
-    sims_t2i = simT2I(X,tvec,W,D);
-    %      break;
-    [inds, xx, ranknames] = display_i2it_imgranks(sims_t2i,ccaT,inria_objf, opt);
-    figure(300) ; clf ; set(300,'name','ranked training images (subset)') ;
-    displayRankedImageList( ranknames, sims_t2i(inds(1:opt.i2iN)));
-    saveas(figure(300), [root_fig,'ranksT2I.png']);
-    % END of NEW T2I
-    
-end
-
-
 end

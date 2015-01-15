@@ -40,22 +40,41 @@ disp('Solving the eigenvalue problem...');
 %% solve generalized eigenvalue problem
 % solve Cxy Cyy^-1 Cyx wx = \lambda^2 Cxx wx
 % wy = Cyy^-1 Cyx wx / lambda
-disp('---solving eig 1 ...');
+disp('---solving eig x ...');
 tic;
 Cyyyx = inv( Cyy )* Cyx;
 
 [Wx , lam2] = eig( double(Cxy*Cyyyx), double(Cxx) );
-invlam = inv(sqrt(lam2));
-Wy = Cyyyx*(invlam*Wx);
+% % invlam = inv( sqrt(lam2)  );
+% % Wy = Cyyyx*(invlam * Wx);
 
 [ll, inds] = sort(diag(lam2),'descend');
-lam2 = diag(ll);
+lam2 = diag(ll); % lam2 reordered ! 
 Wx = Wx(:,inds);
-Wy = Wy(:,inds);
+% % Wy = Wy(:,inds);
 
 LAM = sqrt(lam2);
-invlam = inv(LAM);
+% invlam = inv(LAM);
+% Wy = Cyyyx*(invlam*Wx);
+
+disp('---solving eig y ...');
+tic;
+Cyyyx = inv( Cxx )* Cxy;
+
+[Wy , lam2y] = eig( double(Cyx*Cyyyx), double(Cyy) );
+
+[ll, inds] = sort(diag(lam2y),'descend');
+lam2y = diag(ll); % lam2 reordered ! 
+Wy = Wy(:,inds);
+
+LAMy = sqrt(lam2y);
+dd = min(size(LAMy,1), size(LAM,1));
+verif = diag(LAM(1:dd,1:dd)) - diag(LAMy(1:dd,1:dd));
+verif = sum(verif);
+disp(['verfication of x compactible y: ', num2str(verif)]);
+
 toc;
+
 
 % OLD RESOLUTION 
 disp('---solving eig old ...');
@@ -64,6 +83,7 @@ tic;
 toc;
 
 disp('done eigen decomposition');
+
 [a, index] = sort(diag(D),'descend');
 D = diag(a);
 Wall = Wall(:,index);

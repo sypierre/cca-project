@@ -1,9 +1,10 @@
-function test_image = image2cnnNEW( absline,VF, opt)
+function test_image = image2cnnNEW( absline,requestname,VF, opt)
 % convert image to cnn feature vector
 % NOT NEEDED IN FACT / 15 JAN
-
-% im  = imread([ source_data, requestname]);%image_namelist{cl}{listj}]);
-% figure(100); imagesc(im);
+if ~opt.EVA
+im  = imread([ opt.imgdir, requestname]);%image_namelist{cl}{listj}]);
+figure(100); imagesc(im);
+end
 % imn = single(im);
 % imn = imresize(imn, net.normalization.imageSize(1:2));
 %
