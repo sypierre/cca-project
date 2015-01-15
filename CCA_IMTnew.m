@@ -1,9 +1,8 @@
-function [X,T, Wx, W, Ds,D,Z, mux, mut] = CCA_IMTnew(tmpV,tmpT,opt)
+function [X,T, Wx, W, Ds,D,Z] = CCA_IMTnew(tmpV,tmpT,opt)
 
 % CCA based on final V_class_features and T_class_features cell 1x[N=\sum_k N_k] - [1x dimT]
 
 X = tmpV(:, 1:end-1); T = tmpT(:, 1:end-1);
-mux = mean(tmpV,1); mut = mean(tmpT,1);
 
 p = size(X,2);
 disp(['image feature space : ',int2str(p),' dimensions']);

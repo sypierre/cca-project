@@ -1,65 +1,31 @@
 
-
-
-%pipeline image2tags
-% addpath('./structures');
-% addpath('feature_processing/');
-% addpath('I2T2I/');
-% addpath('text_tags/');
-% addpath('text_vectors/');
-% addpath('./data');
-% t1 = tic;
-% if ~exist('dictionary_inriaPBA')
-% %     load('4class_dictionary_inria.mat');
-%     load('dictionary_inriaPBA.mat');
-% end
-% t2 = toc(t1);
-% % break;
-% clearvars -except dictionary_inriaPBA;
-% close all;
-%
-% addpath('./matconvnet-1.0-beta7/matlab');
-% run vl_setupnn;
-%
-% net = load('imagenet-vgg-f.mat');
-%
-% root_textvectors = './text_vectors/'; % dictionary of word2vec vectors
-% root_texttags = './text_tags/inria_tagbtexts/'; % tags of images with <tagname> id
-% inria_image = './data/webqueries/images/';
-% % ----------------------------------------------------------
-% disp('loading class features..');
-% load('cca_Tclass.mat' );
-% load('cca_Vclass.mat');
-% load('cca_Tclasss.mat'); % T_class_features
-% load('4class_namelist.mat');
-
-% break; end of old start settings
-% --------------------NEW START SETTINGS -------------------
-%% % 01:50 - integrated addpaths into <~>
-if ~ exist('net', 'var')
-    
-demo_ADDPATHS3; %2
-break;
+opt.window2 = 1;
+if opt.window2
+    disp('phrased textual vectors...');
+else
+    disp('not phrased textual vectors...');
 end
 
-% break;
-% used to be <dictionary_inriaPBA> / following loads in <demo_ADDPATHS3.m>
-% load('inria_objf-tfeatures.mat');
-% load('inria_objf-vfeatures.mat');
-% load('inria_objf-tfeaturesall.mat');
-% load('inria_objf-vfeaturesall.mat');
-%
-% load('inria_objf20_nobad.mat');
-% load('inria_objfi-classind.mat');
+if ~ exist('net', 'var')
+    demo_ADDPATHS3;
+    %---------- One of the 2 suffices
+    if opt.window2
+        load('inria_objf-2tfeaturesi.mat');
+        % matObj = matfile('inria_objf-vfeatsi.mat');
+        % whos(matObj)
+    else
+        load('inria_objf-tfeaturesi.mat');
+    end
+    break;
+end
 
 clearvars -except inriaPBA et net et inria_lobj et tagwords et...
     inria_objf et inria_objfv et Vfeature et ...
-    inria_objft et Tfeature et inria_objfi et ...
+    inria_objft et Tfeature et inria_objfi et idx_bad et idx_badT et...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
     Vfeat et semantic;
-
 close all;
-% break;
+
 inria_imgdir = './data/webqueries/images/';
 root_textvectors = './text_vectors/'; % dictionary of word2vec vectors
 root_texttags{1} = './text_tags/inria_tagptexts/'; % tags of images with <tagname> id
@@ -67,6 +33,7 @@ root_texttags{2} = './text_tags/inria_tagbtexts/'; % tags of images with <tagnam
 root_texttags{3} = './text_tags/inria_tagatexts/'; % tags of images with <tagname> id
 root_save = './inria_objects/';
 root_results = './inria_results/';
+root_resultsNEW = './inria_resultsNEW/';
 root_fig = './PGM-report/figures/';
 % -----------------------end of SETTINGS --------------------
 % train
@@ -87,22 +54,16 @@ end
 NT = length(idx_train);
 partial = 1;
 idx_realtrain = idx_train(1: fix(NT/partial) );
-
-% tmpV = Vfeature(idx_realtrain, : );
-tmpV = Vfeat(idx_realtrain, : );
-tmpT = Tfeature(idx_realtrain, : );
-
-% break;
 % END OF create train set
 
-% querie_classes{1} = 'arc de triomphe'; %'aeroplane';
-% querie_classes{2} = 'taj mahal'; % changed (93 -> 6)
-% querie_classes{3} = ' "orsay museum" '; % changed (349 -> 13)
-
-id_class = [0 : 100];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
+opt.trainall = 1;
+opt.v1000 = 1;
+opt.window2 = 1;
 opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
+
+id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 for k = 1 : length(opt.observ)
-querie_classes{k} = semantic{opt.observ(k) + 1};
+    querie_classes{k} = semantic{opt.observ(k) + 1};
 end
 %% NSS
 disp('creating nss...');
@@ -114,10 +75,19 @@ NSS = [];
 for k = 1 : length(id_class)
     NSS = [NSS; nss{ id_class(k)+1 }];
 end
-% tmppV = Vfeature(NSS,:);
-
-tmppV = Vfeat(NSS,:); % line classment re-ordered by class id!!
+if opt.v1000
+    VF = Vfeat;
+else
+    VF = Vfeature;
+end
+if ~ opt.trainall
+tmppV = VF(NSS,:); % line classment re-ordered by class id!!
 tmppT = Tfeature(NSS, :);
+else
+    tmppV = VF(idx_realtrain, : );
+    tmppT = Tfeature(idx_realtrain, : );
+end
+
 % NSS created.
 %% choose CCA's 2 views
 ccaV = tmppV; % trainV
@@ -130,24 +100,23 @@ opt.classes = querie_classes;
 opt.cano_vs = [1,2]; % canonical direction ids
 
 
-
 opt.docca = 0;
 if opt.docca %|| ~exist('X')
     
     disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
     t1 = tic;
-    [X,T,Wx,W,Ds,D,Z] = CCA_IMTnew(ccaV,ccaT,opt);
+    [X,T,Wx,W,Ds,D,Z ] = CCA_IMTnew(ccaV,ccaT,opt);
     tcca = toc(t1);
-    disp(['CCA time : ', num2str(tcca)]);    
+    disp(['CCA time : ', num2str(tcca)]);
     
-    save([root_results,'cca_0-100_2tv1000-d',int2str(opt.d),'.mat'],...
-          'X','T','Wx','W','Ds','D','Z');
+    save([root_resultsNEW,'cca_0-300_2tv1000-d',int2str(opt.d),'.mat'],...
+        'X','T','Wx','W','Ds','D','Z');
 else
     if ~ exist('Z', 'var')
-        load('cca_readyNEW.mat');
+%         load('cca_readyNEW.mat');
     end
 end
-plot_ccaNEW(nss,Z,opt);
+%plot_ccaNEW(nss,Z,opt);
 % break;
 %% Image-text retrieval
 opt.maxpool = 20;  % control the amount of candiate words
@@ -155,11 +124,10 @@ opt.Nss = nss;     % decoupage des images/texts de chaque classe
 opt.occ = 6;       % control the amount of retrieved text
 opt.nwords_display = opt.occ; % replace the historic ~.occ
 opt.I2T = 0;
- opt.periodic = 0;
- opt.window2 = 1; % Tfeature is in window 2 mode
- 
- opt.i2i = 0;
- i2tcontrol = [0 99 135];
+opt.periodic = 0;
+
+opt.i2i = 0;
+i2tcontrol = [0 0 43];
 opt.randomi2t = i2tcontrol(1);
 opt.cl = i2tcontrol(2);
 opt.imreq = i2tcontrol(3);%216;%350;     % % (2,114: hotel,valet,~; hotel,~)
@@ -170,12 +138,14 @@ opt.imreq = i2tcontrol(3);%216;%350;     % % (2,114: hotel,valet,~; hotel,~)
 % (0/346 ~ )
 % (0/43 ~ )
 % (99/539,135 ~ i2t very good !! )
+% (20/128 montst good!)
 opt.external_image = 0;
 % Text2Image search:
 opt.maxwords = 7;
 opt.maxkwords = 9;
 opt.tdim = 200;
 opt.tmaxpool = 20; % 9;
+
 
 %% similarity measure:
 simI2T = @(x,t,W,D) (x*W{1}*D)*(t*W{2}*D)' ./...
@@ -187,7 +157,6 @@ simT2I = @(x,t,W,D) (t*W{2}*D)*(x*W{1}*D)' ./...
 simI2I = @(xq,x, W,D) (xq*W{1}*D)*(x*W{1}*D)' ./...
     ( norm(xq*W{1}*D) * sum( (x*W{1}*D).*(x*W{1}*D) ,2 )' );
 
-opt.v1000 = 1;
 opt.i2iN = 36;
 
 % for each of the sub directories {btexts,atexts,ptexts}, we can find these tag files

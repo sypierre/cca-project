@@ -27,7 +27,7 @@ clearvars -except inriaPBA et net et inria_lobj et tagwords et...
     inria_objf et inria_objfv et Vfeature et ...
     inria_objft et Tfeature et inria_objfi et idx_bad et idx_badT et...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
-    mux et mut Vfeat et semantic;
+    Vfeat et semantic;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -58,20 +58,15 @@ end
 NT = length(idx_train);
 partial = 1;
 idx_realtrain = idx_train(1: fix(NT/partial) );
-
-% tmpV = Vfeature(idx_realtrain, : );
-tmpV = Vfeat(idx_realtrain, : );
-tmpT = Tfeature(idx_realtrain, : );
-
-% break;
 % END OF create train set
 
-% querie_classes{1} = 'arc de triomphe'; %'aeroplane';
-% querie_classes{2} = 'taj mahal'; % changed (93 -> 6)
-% querie_classes{3} = ' "orsay museum" '; % changed (349 -> 13)
+opt.trainall = 0;
+opt.v1000 = 1;
+opt.window2 = 1;
+opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
+opt.docca = 1;
 
 id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
-opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
 for k = 1 : length(opt.observ)
     querie_classes{k} = semantic{opt.observ(k) + 1};
 end
@@ -85,10 +80,19 @@ NSS = [];
 for k = 1 : length(id_class)
     NSS = [NSS; nss{ id_class(k)+1 }];
 end
-% tmppV = Vfeature(NSS,:);
-
-tmppV = Vfeat(NSS,:); % line classment re-ordered by class id!!
+if opt.v1000
+    VF = Vfeat;
+else
+    VF = Vfeature;
+end
+if ~ opt.trainall
+tmppV = VF(NSS,:); % line classment re-ordered by class id!!
 tmppT = Tfeature(NSS, :);
+else
+    tmppV = VF(idx_realtrain, : );
+    tmppT = Tfeature(idx_realtrain, : );
+end
+
 % NSS created.
 %% choose CCA's 2 views
 ccaV = tmppV; % trainV
@@ -100,18 +104,16 @@ opt.d = 300; %400,200;100;%10; %10 3 20 dimension of the latent variable z
 opt.classes = querie_classes;
 opt.cano_vs = [1,2]; % canonical direction ids
 
-
-opt.docca = 0;
 if opt.docca %|| ~exist('X')
     
     disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
     t1 = tic;
-    [X,T,Wx,W,Ds,D,Z , mux,mut] = CCA_IMTnew(ccaV,ccaT,opt);
+    [X,T,Wx,W,Ds,D,Z ] = CCA_IMTnew(ccaV,ccaT,opt);
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
     save([root_resultsNEW,'cca_0-300_2tv1000-d',int2str(opt.d),'.mat'],...
-        'X','T','Wx','W','Ds','D','Z','mux','mut');
+        'X','T','Wx','W','Ds','D','Z');
 else
     if ~ exist('Z', 'var')
 %         load('cca_readyNEW.mat');
@@ -126,7 +128,6 @@ opt.occ = 6;       % control the amount of retrieved text
 opt.nwords_display = opt.occ; % replace the historic ~.occ
 opt.I2T = 0;
 opt.periodic = 0;
- opt.window2 = 1; % Tfeature is in window 2 mode
 
 opt.i2i = 0;
 i2tcontrol = [0 0 43];
@@ -158,7 +159,7 @@ simT2I = @(x,t,W,D) (t*W{2}*D)*(x*W{1}*D)' ./...
 simI2I = @(xq,x, W,D) (xq*W{1}*D)*(x*W{1}*D)' ./...
     ( norm(xq*W{1}*D) * sum( (x*W{1}*D).*(x*W{1}*D) ,2 )' );
 
-opt.v1000 = 1;
+% opt.v1000 = 1;
 opt.i2iN = 36;
 opt.pd = 1;
 % for each of the sub directories {btexts,atexts,ptexts}, we can find these tag files
@@ -207,12 +208,6 @@ if opt.I2T % opt.~
     
     
     
-    
-    
-    
-    
-    
-    % ACTUAL END
     
 else
     %     tt_request = {'arc','de','triomphe'};
