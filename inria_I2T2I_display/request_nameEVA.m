@@ -4,6 +4,14 @@ function [requestname, absline] = request_nameEVA(nsst,inria_imgdir,inria_objfi,
     cl_request = opt.cl;
     
     
+    
+    
+    
+    
+    
+    
+    
+    
     for k = 1 : length( nsst{ opt.cl + 1 } )
     
     im_intra = inria_objfi( nsst{ opt.cl + 1}(k) , 2 );     %opt.imreq;

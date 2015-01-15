@@ -6,7 +6,15 @@ function [Wx, D] = CCA2(X, T)
 T = full(T);
 XX = [X,T];
 index = [ones(size(X,2),1);ones(size(T,2),1)*2];
+
+if 1
+
 [Wx, D] = MultiviewCCA(XX, index, 0.0001);
+else
+    
+[Wx, D] = MultiviewCCAnew(XX, index, 0.0001);
+end
+
 % Wx = V;
 
 
