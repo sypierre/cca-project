@@ -28,7 +28,7 @@ clearvars -except inriaPBA et net et inria_lobj et tagwords et...
     inria_objf et inria_objfv et Vfeature et Vfeat et ...
     inria_objft et Tfeat2 et Tfeat1 et inria_objfi et idx_bad et idx_badT et...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
-    semantic;
+    semantic et cls;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -71,16 +71,12 @@ opt.I2T = 1;
 opt.periodic = 0;
 opt.i2i = 0;
 
-%for ee = 1 : 
-i2tcontrol = [1 2 43];
-
-opt.EVA = 1;
-
-id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 for k = 1 : length(opt.observ)
     querie_classes{k} = semantic{opt.observ(k) + 1};
 end
+
 %% NSS
+id_class = [0 : 300];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 disp('creating nss...');
 % nss contains the absolute line information about the classes_observe !
 % nss{class id + 1} = line id !
@@ -109,6 +105,13 @@ else
 end
 
 % NSS created.
+%% EVA 
+for ee = 7 : 100
+
+i2tcontrol = [1 cls(ee) 43];
+
+opt.EVA = 1;
+
 %% choose CCA's 2 views
 ccaV = tmppV; % trainV
 ccaT = tmppT; % trainT
@@ -200,7 +203,7 @@ if opt.I2T % opt.~
     for nn = 1 : NN
     
     x = image2cnnNEW(requestnames{nn},opt);
-    disp(requestnames{nn});
+    disp(['-------- ',requestnames{nn}]);
     % TEMPORARY TRY
     
     if ~ opt.i2i
@@ -220,7 +223,7 @@ if opt.I2T % opt.~
 %     if ~ opt.EVA
     [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
         Image2TextsNEW(inria_objf, xx,opt);
-    plotI2Tnew( pool_sel, occd, inria_imgdir, requestname, opt );
+    plotI2Tnew( pool_sel, occd, inria_imgdir, requestnames{nn}, opt );
     end
     
     % END of temporary try
@@ -245,6 +248,7 @@ if opt.I2T % opt.~
      end    
     end
          rho = rho/(NN*opt.i2iN);
+         disp( ['query_',int2str(cls(ee)),': P@36 = ',num2str(rho)]);
          if opt.EVA
              save([root_resultsNEW, 'EVA-I2I-cl',int2str(opt.cl),'.mat'],'rho','NN','opt');
          end
@@ -275,3 +279,4 @@ else
 end
 
 
+end
