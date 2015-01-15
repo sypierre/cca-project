@@ -3,9 +3,7 @@
 
 setup;
 % demo_ADDPATHS;
-if ~ exist('./data/webqueries/images', 'dir')
 addpath('./data/webqueries/images');
-end
 
 t1 = tic;
     load('dictionary_inriaPBA.mat');
@@ -21,7 +19,7 @@ addpath('./I2T2I');
  addpath('./inria_obj_features');
 % addpath('./inria_objects');
 addpath('./inria_I2T2I_display');
-addpath('./inria_results');
+addpath('./inria_resultsNEW');
 
 disp('loading feature archives...');
 
@@ -39,5 +37,7 @@ load('inria_objf_nobad.mat');
 % -------------------------
 
 load('inria_objfi-classind.mat');
+load('inria_idxbads.mat');
+
 load('inria_semantics.mat');
 

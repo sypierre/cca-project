@@ -23,11 +23,9 @@ if ~ exist('net', 'var')
     break;
 end
 
-
-
 clearvars -except inriaPBA et net et inria_lobj et tagwords et...
     inria_objf et inria_objfv et Vfeature et ...
-    inria_objft et Tfeature et inria_objfi et ...
+    inria_objft et Tfeature et inria_objfi et idx_bad et idx_badT et...
     idx_bads et idx_goods et X et T et Wx et W et Ds et D et Z et ...
     mux et mut Vfeat et semantic;
 close all;
@@ -116,7 +114,7 @@ if opt.docca %|| ~exist('X')
         'X','T','Wx','W','Ds','D','Z','mux','mut');
 else
     if ~ exist('Z', 'var')
-        load('cca_readyNEW.mat');
+%         load('cca_readyNEW.mat');
     end
 end
 %plot_ccaNEW(nss,Z,opt);
@@ -126,9 +124,9 @@ opt.maxpool = 20;  % control the amount of candiate words
 opt.Nss = nss;     % decoupage des images/texts de chaque classe
 opt.occ = 6;       % control the amount of retrieved text
 opt.nwords_display = opt.occ; % replace the historic ~.occ
-opt.I2T = 1;
+opt.I2T = 0;
 opt.periodic = 0;
-%  opt.window2 = 1; % Tfeature is in window 2 mode
+ opt.window2 = 1; % Tfeature is in window 2 mode
 
 opt.i2i = 0;
 i2tcontrol = [0 0 43];
