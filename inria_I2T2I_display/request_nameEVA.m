@@ -1,5 +1,5 @@
 
-function requestname = request_nameEVA(nsst,inria_imgdir,inria_objfi, opt)
+function [requestname, absline] = request_nameEVA(nsst,inria_imgdir,inria_objfi, opt)
 
     cl_request = opt.cl;
     
@@ -8,7 +8,8 @@ function requestname = request_nameEVA(nsst,inria_imgdir,inria_objfi, opt)
     
     im_intra = inria_objfi( nsst{ opt.cl + 1}(k) , 2 );     %opt.imreq;
     requestname{k} = ['query_',int2str( cl_request ),'_document_',int2str(im_intra),'_imagethumb.jpg'];
-    %requestname = inria_objf{}
+    
+    absline(k) = nsst{ opt.cl + 1 }(k);
     end
 
 end
