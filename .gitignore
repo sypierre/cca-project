@@ -6,3 +6,23 @@
 *.m~
 
 *.png
+
+*.sty
+
+*.pdf
+
+PGM-report/Report_PGMproject - proposal.tex
+
+*.aux
+
+*.bbl
+
+*.blg
+
+*.brf
+
+*.log
+
+*.out
+
+*.gz
