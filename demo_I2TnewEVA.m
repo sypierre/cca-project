@@ -3,12 +3,6 @@
 % --------------------NEW START SETTINGS -------------------
 %% % 01:50 - integrated addpaths into <~>
 
-opt.window2 = 1;
-if opt.window2
-    disp('phrased textual vectors...');
-else
-    disp('not phrased textual vectors...');
-end
 
 if ~ exist('net', 'var')
     demo_ADDPATHS3;
@@ -28,7 +22,7 @@ clearvars -except inriaPBA net inria_lobj tagwords ...
     inria_objf inria_objfv Vfeature  Vfeat ...
     inria_objft Tfeat2  Tfeat1 inria_objfi idx_bad  idx_badT ...
     idx_bads  idx_goods  X  T  Wall  W  Dall  D  Z  ...
-    semantic  cls  Wx  Wy  LAM Zw  invU ;
+    semantic  cls  Wx  Wy  LAM Zw  invU ccaV ccaT NSS nss nsst;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -56,6 +50,12 @@ if ~ exist('idx_test')
     idx_test =  idx_goods( find (modidx == 0) );
     idx_train = setdiff(idx_goods, idx_test );
 end
+rel_train = intersect( idx_train, find(relevance(:,3)==1) );
+rel_all = intersect( [1:71478], find(relevance(:,3)==1) );
+rel_test = intersect( idx_test, find(relevance(:,3)==1) );
+rel_test_ids = inria_objfi(rel_test, :);
+rel_cl0_intras = rel_test_ids(find(rel_test_ids(:,1)==0),2);
+
 % hist(modidx, 5);
 NT = length(idx_train);
 partial = 1;
@@ -65,17 +65,25 @@ idx_realtrain = idx_train(1: fix(NT/partial) );
 opt.trainall = 0;
 opt.v1000 = 1;
 opt.window2 = 0;
+if opt.window2
+    disp('phrased textual vectors...');
+else
+    disp('not phrased textual vectors...');
+end
 
 opt.docca = 0;
-opt.d = 300; %400,200;100;%10; %10 3 20 dimension of the latent variable z
+opt.d = 300; %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
 opt.cano_vs = [1,2]; % canonical direction ids
 
 opt.I2T = 1;
 opt.periodic = 0;
-opt.i2i = 0;
-i2tcontrol = [0 0 43]; % 57
+opt.i2i = 1;
+i2tcontrol = [0 0 rel_cl0_intras(1)]; % 57
+% we may enable rel_test_cl{:} to replace <nsst> !
 opt.oldZ = 1;
-opt.EVA = 0;  opt.EVA1 = 1; opt.EVA2 = 100;
+ opt.puiss = 3;
+
+opt.EVA = 0;  opt.EVA1 = find(cls == 19); opt.EVA2 = opt.EVA1;
 if ~ opt.EVA
     opt.EVA1 = 1;
     opt.EVA2 = 1;
@@ -85,14 +93,7 @@ opt.observ = [0, 50, 99];%[1 , 20 , 180 ];
 %% NSS
 id_class = [0 : 355];%[0,100,200]%(good);[0, 10, 130,(131:200) ];%[0, 93, 349];%
 disp('creating nss...');
-% nss contains the absolute line information about the classes_observe !
-% nss{class id + 1} = line id !
-[nss , nsst ] = indice_class(id_class , inria_objfi, idx_realtrain, idx_test);
-NSS = [];
 
-for k = 1 : length(id_class)
-    NSS = [NSS; nss{ id_class(k)+1 }]; % nss{id_class(k)+1} may be empty
-end
 if opt.window2
     TF = Tfeat2;
 else
@@ -104,7 +105,21 @@ else
     VF = Vfeature;
 end
 % break;
-%% choose CCA's 2 views
+p = size(VF,2) - 1;
+%% CCA : W , Z and canonical variates plot
+
+if opt.docca %|| ~exist('X')
+    
+    disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
+% %     % nss contains the absolute line information about the classes_observe !
+% nss{class id + 1} = line id !
+[nss , nsst ] = indice_class(id_class , inria_objfi, idx_realtrain, idx_test);
+ NSS = [];
+
+for k = 1 : length(id_class)
+    NSS = [NSS; nss{ id_class(k)+1 }]; % nss{id_class(k)+1} may be empty
+end
+% % % choose CCA's 2 views
 
 if ~ opt.trainall
     ccaV = VF(NSS,:); % line classment re-ordered by class id!!
@@ -113,24 +128,40 @@ else
     ccaV = VF(idx_realtrain, : );
     ccaT = TF(idx_realtrain, : );
 end
-%% CCA : W , Z and canonical variates plot
 
-if opt.docca %|| ~exist('X')
-    
-    disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
-    
-    t1 = tic;
-    [X,T, Wx, Wy, LAM, Zw, invU, W , Dall, D, Z] = newCCA_IMTnew(ccaV,ccaT,opt);
+ t1 = tic;
+    [X,T, Wx, Wy, LAM, Wall , Dall] = newCCA_IMTnew(ccaV,ccaT,opt);
     
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
     save([root_resultsNEW,'NEWcca_ALL_tv1000-d',int2str(opt.d),'.mat'],...
-        'X','T','Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
-
-    plot_ccaNEW(nss,Z, Zw, opt, 1, semantic);
-
+       'Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
 end
+
+W{1} = Wall(1:p,1:opt.d);
+W{2} = Wall(p+1:end,1:opt.d);
+
+D = Dall(1:opt.d,1:opt.d);
+
+Z{1} = [X*W{1} , ccaV(:,end) ];%(:, 1:opt.d );
+Z{2} = [T*W{2} , ccaV(:,end) ];%(:, 1:opt.d );
+
+%% get invmu_x and invmu_t
+rap = bsxfun(@rdivide, Wx(:,1:opt.d), W{1} );
+rap = rap(1,:);
+invU{1} = diag(rap);
+clear('rap');
+
+rap = bsxfun(@rdivide, Wy(:,1:opt.d), W{2} );
+rap = rap(1,:);
+invU{2} = diag(rap);
+
+Zw{1} = [X*( Wx(:,1:opt.d)*(invU{1}.^3) ), ccaV(:,end) ];
+Zw{2} = [T*( Wy(:,1:opt.d)*(invU{2}.^3) ), ccaT(:,end) ];
+
+% plot_ccaNEW(nss,Z, Zw, opt, 1, semantic);
+
 
 % break;
 %% EVA
@@ -189,7 +220,7 @@ for ee = opt.EVA1 : opt.EVA2
         rho = 0;
         
         for nn = 1 : NN
-            
+            rhon = 0; 
             x = image2cnnNEW(abslines(nn),requestnames{nn}, VF, opt);
             disp(['-------- ',requestnames{nn}]);
             
@@ -209,7 +240,7 @@ for ee = opt.EVA1 : opt.EVA2
                 % END of using Z{2}
                 
             else
-                sims = simI2I(x,X,W,D) ;
+                sims = simI2I(x,X,W) ;
             end
             % DISPLAY ranked Images:
             [inds, xx, ranknames] = display_i2it_imgranks(sims,ccaT,inria_objf, opt);
@@ -227,11 +258,6 @@ for ee = opt.EVA1 : opt.EVA2
             end
             
             % END of temporary try
-            %     break;
-            %     [responses,indx,occd,occ, pool,inds,sims] = Image2Texts(x, T , W, D,simI2T,T_class,opt);
-            %     listj = plotI2T(responses, cl_request,id_class,T_class,im_request);
-            
-            
             % FIND LABELS
             % %     xx_cls = []; scores = sims( inds(1:opt.i2iN) );
             % %     for i = 1 : length(xx)
@@ -240,23 +266,21 @@ for ee = opt.EVA1 : opt.EVA2
             % %     end
             % %     figure(102) ;  %set(2,'name','precision-recall on train data') ;
             % %     vl_pr(labels, scores);
-            
             % %     saveas( figure(102), [root_fig,'I2I-APRnew.png']);
-            
             for i = 1 : length(xx)
-                rho = rho + ( inria_objf{ xx(i) }.id_class == opt.cl );
+                  
+                rhon = rhon +  ( inria_objf{ xx(i) }.id_class == opt.cl ) ;
             end
+            disp(['--- partially: ',num2str(rhon/(opt.i2iN) ) ]);
+            rho = rho + rhon;
         end
-        rho = rho/(NN*opt.i2iN);
-        disp( ['query_',int2str(cls(ee)),': P@36 = ',num2str(rho)]);
+        taux = rho/(NN*opt.i2iN);
+        disp( ['query_',int2str(cls(ee)),': P@36 = ',num2str(taux), '// NN = ', int2str(NN)]);
         if opt.EVA
             save([root_resultsNEW, 'EVA-I2I-cl',int2str(opt.cl),'.mat'],'rho','NN','opt');
         end
         
-        
-        
     else
-        %     tt_request = {'arc','de','triomphe'};
         tt_request = input('Please input your request key words:\n','s');
         tt_request = string2words(tt_request);
         tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector

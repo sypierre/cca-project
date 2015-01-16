@@ -1,4 +1,4 @@
-function [X,T, Wx, Wy,LAM, Zw,  invU, W, Dall,D,Z] = newCCA_IMTnew(ccaV,ccaT,opt)
+function [X,T, Wx, Wy,LAM, Wall,Dall] = newCCA_IMTnew(ccaV,ccaT,opt)
 
 %% CCA - organization
 
@@ -23,27 +23,5 @@ index = [ones(size(X,2),1);ones(size(T,2),1)*2];
 %% discarded CCA2new/ CCA2
 % [Wx,Wy,LAM, Wall, Dall] = CCA2new(X, T);
 %% Low-dimensional visualization
-d = opt.d; %16;
-
-W{1} = Wall(1:p,1:d);
-W{2} = Wall(p+1:end,1:d);
-
-D = Dall(1:d,1:d);
-
-Z{1} = [X*W{1} , ccaV(:,end) ];%(:, 1:d );
-Z{2} = [T*W{2} , ccaT(:,end) ];%(:, 1:d );
-
-%% get invmu_x and invmu_t
-rap = bsxfun(@rdivide, Wx(:,1:d), W{1} );
-rap = rap(1,:);
-invU{1} = diag(rap);
-clear('rap');
-
-rap = bsxfun(@rdivide, Wy(:,1:d), W{2} );
-rap = rap(1,:);
-invU{2} = diag(rap);
-
-Zw{1} = [X*( Wx(:,1:d)*(invU{1}.^3) ), ccaV(:,end) ];
-Zw{2} = [T*( Wy(:,1:d)*(invU{2}.^3) ), ccaT(:,end) ];
 
 end
