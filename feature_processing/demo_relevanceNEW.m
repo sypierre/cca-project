@@ -3,7 +3,7 @@ if exist('relevance','var')
 clear('relevance');
 end
 % relevance = load('./data/webqueries/labels_orig.txt');
-relevance = zeros(size(VF,1),3);
+relevance = zeros( length(inria_objf),3);
 fid = fopen('./data/webqueries/labels.txt');
 
 tline = fgetl(fid);

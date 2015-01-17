@@ -55,9 +55,21 @@ if ~ exist('rel_test')
 rel_train = intersect( idx_train, find(relevance(:,3)==1) );
 rel_all = intersect( [1:71478], find(relevance(:,3)==1) );
 rel_test = intersect( idx_test, find(relevance(:,3)==1) );
+rel_testxval = rel_test( find(mod(rel_test,2) == 0 ) );
+
+
+rel_testxval = rel_testxval( randi(length(rel_testxval),1,min(1000,length(rel_testxval)))   );
+
+rel_testeval = setdiff(rel_test, rel_testxval );
+rel_testeval = rel_testeval( randi(length(rel_testeval),1,min(1000,length(rel_testeval)))   );
+
 rel_test_ids = inria_objfi(rel_test, :);
 for i = 1 : 355
 rel_cls_intras{i} = rel_test_ids(find(rel_test_ids(:,1)== i-1 ),2);
+% rel equivalence of nss, nsst
+ %  nss{classid + 1} : absline values of train set 
+ % nsst{classid + 1 }: absline values of test set
+rel_cls_test{ i } = rel_test( find(inria_objfi(rel_test,1) == i-1) );
 end
 
 end
@@ -79,7 +91,6 @@ else
 end
 
 opt.docca = 0;
-opt.d = 300; %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
 opt.cano_vs = [1,2]; % canonical direction ids
 
 opt.I2T = 1;
@@ -103,21 +114,38 @@ disp('creating nss...');
 
 if opt.window2
     TF = Tfeat2;
+    TFtest = Tfeat2(idx_test, : );
+    TFxval = Tfeat2(rel_testxval,:);
+    TFeval = Tfeat2(rel_testeval,:);
 else
     TF = Tfeat1;
+    TFtest = Tfeat1(idx_test , : );        
+    TFxval = Tfeat1(rel_testxval,:);
+    TFeval = Tfeat1(rel_testeval,:);
+
 end
 if opt.v1000
     VF = Vfeat;
+    VFtest = Vfeat(idx_test, : );
+    VFxval = Vfeat(rel_testxval,:);
+    VFeval = Vfeat(rel_testeval,:);
+
 else
     VF = Vfeature;
+    VFtest = Vfeature(idx_test, : );
+    VFxval = Vfeature(rel_testxval,:);
+    VFeval = Vfeature(rel_testeval,:);
+
 end
+
+
 % break;
 p = size(VF,2) - 1;
 %% CCA : W , Z and canonical variates plot
 
 if opt.docca %|| ~exist('X')
     
-    disp(['start CCA with saved dimension: ',int2str(opt.d),' for I2T...']);
+    disp(['start CCA .... ']);
 % %     % nss contains the absolute line information about the classes_observe !
 % nss{class id + 1} = line id !
 [nss , nsst ] = indice_class(id_class , inria_objfi, idx_realtrain, idx_test);
@@ -142,9 +170,17 @@ end
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
-    save([root_resultsNEW,'NEWcca_ALL_tv1000-d',int2str(opt.d),'.mat'],...
+    save([root_resultsNEW,'NEWcca_ALL_tv1000.mat'],...
        'Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
 end
+
+
+%% Validation : choose dimensionality of W
+dimensions = 2.^[6:9];
+
+disp(['Dimensionality of W: ',int2str(opt.d),' for I2T2I...']);
+
+opt.d = 300; %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
 
 W{1} = Wall(1:p,1:opt.d);
 W{2} = Wall(p+1:end,1:opt.d);
