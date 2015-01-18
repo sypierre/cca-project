@@ -22,7 +22,7 @@ count_string = @(x) sum(ismember(pool,x)); % equivalent to the following
 for w = 1 : length(pool)
         if ismember(pool{w},unipool)
         occ(w) = count_string(pool{w});
-         if length(pool{w}) < 2 || ismember(pool{w},{'le','la','of','the','and','has','to','du'} )
+         if length(pool{w}) < 2 || ismember(pool{w},{'that','her','at','for','with','is','des','en','sur','over','in','by','on','le','la','of','the','and','has','to','du'} )
              occ(w) = -1;
          end
         unipool{find(ismember(unipool,pool{w}))} = 'NaN';

@@ -20,7 +20,7 @@ addpath('./I2T2I');
 % addpath('./inria_objects');
 addpath('./inria_I2T2I_display');
 addpath('./inria_resultsNEW');
-
+addpath('./CCA');
 disp('loading feature archives...');
 
 %-----------
@@ -42,3 +42,7 @@ load('inria_idxbads.mat');
 load('inria_semantics.mat');
 
 load('inria_relevances.mat');
+
+load('inria_SEMF.mat');
+load('inria_SEMFb.mat');
+load('inria_SEMFbb.mat');

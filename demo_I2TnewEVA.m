@@ -24,7 +24,7 @@ clearvars -except inriaPBA net inria_lobj tagwords ...
     idx_bads  idx_goods  X  T  Wall  W  Dall  D  Z  ...
     semantic  cls  Wx  Wy  LAM Zw  invU ccaV ccaT NSS nss nsst relevance ...
     rel_train rel_all rel_test rel_test_ids rel_cls_intras rel_testxval...
-    rel_testeval;
+    rel_testeval  textSEM VSEM VSEMb SEMF SEMFb;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -143,8 +143,8 @@ end
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
-    save([root_resultsNEW,'NEWcca_ALL_tv1000-d',int2str(opt.d),'.mat'],...
-       'Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
+    save([root_resultsNEW,'newNEWcca_ALL_tv1000-d',int2str(opt.d),'.mat'],...
+       'Wx','Wy','LAM','Wall','Dall');
 end
 
 W{1} = Wall(1:p,1:opt.d);

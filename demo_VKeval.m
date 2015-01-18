@@ -53,7 +53,7 @@ if ~ exist('idx_test')
     idx_test =  idx_goods( find (modidx == 0) );
     idx_train = setdiff(idx_goods, idx_test );
 end
-if  ~ exist('rel_test')
+if  1 %~ exist('rel_test')
     rel_train = intersect( idx_train, find(relevance(:,3)==1) );
     rel_all = intersect( [1:71478], find(relevance(:,3)==1) );
     rel_test = intersect( idx_test, find(relevance(:,3)==1) );
@@ -91,7 +91,7 @@ else
     disp('not phrased textual vectors...');
 end
 
-opt.docca = 1;
+opt.docca = 0;
 opt.view3 = 0;
 opt.cano_vs = [1,2]; % canonical direction ids
 
@@ -144,6 +144,12 @@ SF = SEMFbb;
 SFtest = SEMFbb(idx_test,:);
 SFxval = SEMFbb(rel_testxval,:);
 SFeval = SEMFbb(rel_testeval,:);
+
+TF = SF;
+TFtest = SFtest;
+TFxval = SFxval;
+TFeval = SFeval; 
+
 % break;
 %% CCA : W , Z and canonical variates plot
 
@@ -237,7 +243,7 @@ dimensions = [64  128  200  256 280 300 310 380 512]; %round( linspace(64,664, 2
 
 dd = 4;
 
-retrivmode = 'I2T';
+retrivmode = 'T2I';
 switch retrivmode
     case 'I2I'
         dd = 2;

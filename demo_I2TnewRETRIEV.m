@@ -91,8 +91,8 @@ else
     disp('not phrased textual vectors...');
 end
 
-opt.docca = 1;
-opt.view3 = 0;
+opt.docca = 0;
+opt.view3 = 1;
 opt.cano_vs = [1,2]; % canonical direction ids
 
 opt.I2T = 1;
@@ -152,7 +152,7 @@ if opt.docca %|| ~exist('X')
     disp(['start CCA .... ']);
     % %     % nss contains the absolute line information about the classes_observe !
     % nss{class id + 1} = line id !
-    [nss , nsst ] = indice_class(id_class , inria_objfi, idx_realtrain, idx_test);
+    [nss , nsst ] = indice_class(id_class , inria_objfi, idx_realtrain, rel_test);
     NSS = [];
     
     for k = 1 : length(id_class)
@@ -237,7 +237,7 @@ dimensions = [64  128  200  256 280 300 310 380 512]; %round( linspace(64,664, 2
 
 dd = 4;
 
-retrivmode = 'I2T';
+retrivmode = 'T2I';
 switch retrivmode
     case 'I2I'
         dd = 2;
@@ -278,85 +278,151 @@ end
 
 %     break;
 %% RETRIVAL of cl intra
-opt.i2iN = 20;
+opt.i2iN = 36;
+opt.randomi2t = 0;
+opt.maxpool = 20;  % control the amount of candiate words
+opt.Nss = nss;     % decoupage des images/texts de chaque classe
+opt.occ = 6;       % control the amount of retrieved text
+opt.nwords_display = opt.occ; % replace the historic ~.occ
+opt.tdim = 200;
+opt.maxwords = 7;
+
+
+ret_clin = 5;
+ret_cl = 100;
+opt.cl = ret_cl -1;
+subsave = 'T2I/';
+opt.imreq = inria_objfi(nsst{opt.cl+1}(ret_clin),2);
+
+[requestname, abslines] = request_nameNEW(nsst,inria_imgdir, inria_objfi, opt);
+        NN = 1;
+        requestnames = {requestname};
+        
+        
 switch retrivmode
     case 'I2I'
-        Ztest = Zeval{1};
+        Ztest = VF( nsst{ret_cl}(ret_clin),1:1000)*W0{1}(:,1:opt.d) ;     %Zeval{1};
         Zbase = Z{1};
     case 'I2T'
-        Ztest = Zeval{1};
+        Ztest = VF( nsst{ret_cl}(ret_clin),1:1000)*W0{1}(:,1:opt.d); 
         Zbase = Z{2};
     case 'I2K'
-        Ztest = Zeval{1};
+        Ztest = VF( nsst{ret_cl}(ret_clin),1:1000 )*W0{1}(:,1:opt.d); 
         Zbase = Z{3};
     case 'K2I'
-        Ztest = Zeval{3};
+%         Ztest = SF( nsst{ret_cl}(ret_clin),1:353 )*W0{3}(:,1:opt.d); 
         Zbase = Z{1};
     case 'T2I'
-        Ztest = Zeval{2};
+%         Ztest = TF( nsst{ret_cl}(ret_clin),1:1400 )*W0{2}(:,1:opt.d); 
         Zbase = Z{1};
 end
 
+if 0
+
 disp('calculating RETmatrix...');
-RETmatrix = simI2Tval( Ztest(:,1:end-1), Zbase(:,1:end-1) );
+RETmatrix = simI2Tval( Ztest , Zbase(:,1:end-1) );
 RETmatrix( find(isnan(RETmatrix)) ) = 0;
 
-simsSUM = sum(sum(RETmatrix));
+ simsSUM = sum(RETmatrix);
 if simsSUM == 0
     disp('SUM of val matrix singular...');
 end
-%for l = 1 : size(I2Tval,1)
-Rho = zeros(1,355 );
-Wei = zeros(1,355);
-for cc = 1 : length(cls)
-    clid = cls(cc);
-    % find clid in Z{2}
-    vallines = find( inria_objfi(Ztest(:,end) ,1 ) == clid  );
-    disp(['class ',int2str(cls(cc)),' : nb test images = ',int2str(length(vallines))] );
-    xx = zeros(length(vallines), opt.i2iN);
-    rho = zeros(length(vallines),1);
-    [~, INDS] = sort( RETmatrix(vallines,:),2,'descend' );
-    for ii = 1 : length(vallines)
-        
-        xx(ii,:) = Zbase(INDS(ii,1: opt.i2iN), end); % absolute line values!
-        
-        
-        rho(ii) = sum( inria_objfi(xx(ii,:),1) == clid ) / opt.i2iN;
+
+%%%
+%
+    [~, inds] = sort(RETmatrix,'descend');
+%     opt.i2iN = 36;
+    
+    xx = Zbase(inds(1: opt.i2iN),end); % absolute line values!
+    %inria_objf{xx(1:20)}
+    for r = 1  : opt.i2iN
+        ranknames{r} = inria_objf{ xx(r) }.img_file;
     end
-    Wei(clid + 1) = length(vallines);
-    Rho(clid+1) = mean(rho);
-    %
-    %         abslines = find( inria_objfi(Z{2}(:,end),1) == clid  );
-    %         simsid = sum(sum( RETmatrix(vallines, abslines) ));
-    %         valscore( clid+1 ) = simsid/simsSUM;
-    %         disp(['---validation score of class ', int2str(clid),' is: ',num2str(valscore(clid+1))] );
+
+                figure(101) ; clf ; set(101,'name','ranked training images (subset)') ;
+                displayRankedImageList( ranknames, RETmatrix(inds(1:opt.i2iN)));
+                saveas(figure(101), [root_fig,subsave,'RETi2i.png']);
+                figure(100); imagesc(imread(requestname));
+                saveas(figure(100), [root_fig,subsave,'RETi2i-r.png']);
+                %     end
+                %%DISPLAY ranked Texts:
+                %     if ~ opt.EVA
+                [ pool_sel, occ_idx, pool, unipool, occd, occ ] = ...
+                    Image2TextsNEW(inria_objf, xx,opt);
+                plotI2Tnew( pool_sel, occd, inria_imgdir, requestnames{1}, opt );
+            
+                 saveas(figure(200), [root_fig,subsave,'RETi2t.png']);
+                rho = sum( inria_objfi(xx,1) == opt.cl ) / opt.i2iN;
+                
+                disp(['--- partially: ',num2str(rho)  ]);
+        disp( ['query_',int2str(ret_cl-1),': P@36 = ',num2str(rho), '// NN = ', int2str(1)]);
+
+else
+            tt_request = input('Please input your request key words:\n','s');
+        tt_request = string2words(tt_request);
+        tvec = text2vecNEW(tt_request, inriaPBA, opt); % vertical vector
+        
+        % NEW T2I
+        disp('calculating RETmatrix...');
+RETmatrix = simI2Tval( tvec*W0{2}(:,1:opt.d) , Zbase(:,1:end-1) );
+RETmatrix( find(isnan(RETmatrix)) ) = 0;
+
+ simsSUM = sum(RETmatrix);
+if simsSUM == 0
+    disp('SUM of val matrix singular...');
 end
 
-valinds = find(~isnan(Rho));
-Rho(isnan(Rho)) = 0;
-[maxeval, maxinds] = sort(Rho,'descend');
-Rhoo = Rho(valinds);
-Weii = Wei(valinds);
+%         RETmatrix = RETmatrix;
+        %      break;
+        [inds, xx, ranknames] = display_i2it_imgranks(RETmatrix,ccaT,inria_objf, opt);
+        figure(300) ; clf ; set(300,'name','ranked training images (subset)') ;
+        displayRankedImageList( ranknames, RETmatrix(inds(1:opt.i2iN)));
+        saveas(figure(300), [root_fig,subsave,'ranksT2I.png']);
+end
+%%%
 
-EVAL = Weii*Rhoo'/sum(Weii);
-disp(['EVAL: ', num2str(EVAL)]);
 
-figure(22); subplot(211);  bar(Rhoo);
-subplot(212); bar(Weii);
-title(['Evaluation ',retrivmode,': ', num2str(EVAL)]);
-saveas(22, [root_fig, 'Evaluation-',retrivmode,'-d',int2str(opt.d),'.png']);
-
-disp(maxeval(1:3));
-disp(maxinds(1:3));
-
-%     VALSCORE(dd) = sum(valscore);
-%     disp(['VALIDATION SCORE of dd =  ', int2str(opt.d),' is: ',num2str(VALSCORE(dd))] );
-%
-%
-% figure(23); plot(dimensions,VALSCORE);
-% saveas(23, [root_fig, 'XValidation-',savech,'-9d64-512.png']);
-%
-%
-
+% Rho = zeros(1,355 );
+% Wei = zeros(1,355);
+% for cc = 1 : length(cls)
+%     clid = cls(cc);
+%     % find clid in Z{2}
+%     vallines = find( inria_objfi(Ztest(:,end) ,1 ) == clid  );
+%     disp(['class ',int2str(cls(cc)),' : nb test images = ',int2str(length(vallines))] );
+%     xx = zeros(length(vallines), opt.i2iN);
+%     rho = zeros(length(vallines),1);
+%     [~, INDS] = sort( RETmatrix(vallines,:),2,'descend' );
+%     for ii = 1 : length(vallines)
+%         
+%         xx(ii,:) = Zbase(INDS(ii,1: opt.i2iN), end); % absolute line values!
+%         
+%         
+%         rho(ii) = sum( inria_objfi(xx(ii,:),1) == clid ) / opt.i2iN;
+%     end
+%     Wei(clid + 1) = length(vallines);
+%     Rho(clid+1) = mean(rho);
+%     %
+%     %         abslines = find( inria_objfi(Z{2}(:,end),1) == clid  );
+%     %         simsid = sum(sum( RETmatrix(vallines, abslines) ));
+%     %         valscore( clid+1 ) = simsid/simsSUM;
+%     %         disp(['---validation score of class ', int2str(clid),' is: ',num2str(valscore(clid+1))] );
+% end
+% 
+% valinds = find(~isnan(Rho));
+% Rho(isnan(Rho)) = 0;
+% [maxeval, maxinds] = sort(Rho,'descend');
+% Rhoo = Rho(valinds);
+% Weii = Wei(valinds);
+% 
+% EVAL = Weii*Rhoo'/sum(Weii);
+% disp(['EVAL: ', num2str(EVAL)]);
+% 
+% figure(22); subplot(211);  bar(Rhoo);
+% subplot(212); bar(Weii);
+% title(['Evaluation ',retrivmode,': ', num2str(EVAL)]);
+% saveas(22, [root_fig, 'Evaluation-',retrivmode,'-d',int2str(opt.d),'.png']);
+% 
+% disp(maxeval(1:3));
+% disp(maxinds(1:3));
 
 

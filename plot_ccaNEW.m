@@ -7,15 +7,22 @@ cs = opt.cano_vs;%[1 2], [2 4]; % choice for 2-d visualization
 if length(cs) < 3
 cano_var{1} = [Z{1}(:,cs(1)), Z{1}(:,cs(2)) ];
 cano_var{2} = [Z{2}(:,cs(1)), Z{2}(:,cs(2)) ];
+cano_var{3} = [Z{3}(:,cs(1)), Z{3}(:,cs(2)) ];
+
+
+
 cano_varr{1} = [Zw{1}(:,cs(1)), Zw{1}(:,cs(2)) ];
 cano_varr{2} = [Zw{2}(:,cs(1)), Zw{2}(:,cs(2)) ];
+cano_varr{3} = [Zw{3}(:,cs(1)), Zw{3}(:,cs(2)) ];
 
 else
 cano_var{1} = [Z{1}(:,cs(1)), Z{1}(:,cs(2)), Z{1}(:,cs(3)) ];
 cano_var{2} = [Z{2}(:,cs(1)), Z{2}(:,cs(2)), Z{2}(:,cs(3)) ];
+cano_var{3} = [Z{3}(:,cs(1)), Z{3}(:,cs(2)), Z{3}(:,cs(3)) ];
 
 cano_varr{1} = [Zw{1}(:,cs(1)), Zw{1}(:,cs(2)), Zw{1}(:,cs(3)) ];
 cano_varr{2} = [Zw{2}(:,cs(1)), Zw{2}(:,cs(2)), Zw{2}(:,cs(3)) ];
+cano_varr{3} = [Zw{3}(:,cs(1)), Zw{3}(:,cs(2)), Zw{3}(:,cs(3)) ];
 
 end
 
@@ -95,12 +102,12 @@ legend(classes{1}, classes{2},classes{3});
 subplot(122);
 for k = 1 : 3
      if length(cs) < 3
-scatter(cano_varr{2}( ids{k},1), ...%nss(k):nss(k+1)-1,1), ...
-                      cano_varr{2}( ids{k},2) , colors(k) );%nss(k):nss(k+1)-1,2) ,colors(k));
+scatter(cano_varr{3}( ids{k},1), ...%nss(k):nss(k+1)-1,1), ...
+                      cano_varr{3}( ids{k},2) , colors(k) );%nss(k):nss(k+1)-1,2) ,colors(k));
     else
-        scatter3(cano_varr{2}(ids{k}, 1), ...
-                cano_varr{2}(ids{k}, 2),...
-                cano_varr{2}(ids{k}, 3) ,colors(k));
+        scatter3(cano_varr{3}(ids{k}, 1), ...
+                cano_varr{3}(ids{k}, 2),...
+                cano_varr{3}(ids{k}, 3) ,colors(k));
     end
 hold on;
 end

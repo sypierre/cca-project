@@ -272,147 +272,137 @@ We notice that it is equivalent to the similarity meaure defined in \citep{cca0}
 
 We visualize some of the image-text retrieval examples on test data using the above similarity measure.
 
-\subsection{Retrieval tasks on test data}
-For test we follow the same methods as described in \citep{cca0}. The test data is the complementary 1/5 of the dataset; it is split into three parts: (1) validataion set of 1,000 images/texts, (2) test set of 3,000 images/texts and (3) the test "database" of 10,550 images/texts.
-In the validation phase, for different tasks, we find optimal values ( among the several candidate values from 64 to 512) for the total number of dimensions of canonical directions that we will keep for the retrieval.
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=0.4\textwidth]{figures/XValidation-d64-512}
- }
- \caption{Global I2T score for different values of number of dimensions of W.}
- \label{fig:1-xval1}
-\end{figure} 
+\subsection{Image-to-text search on test data}
+
+We carry out the image-to-text search on the remaining test data and visualize the results of several images
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=.4\textwidth]{figures/XValidation-I2I-9d64-512}
- }
- \caption{Global I2I score for different values of number of dimensions of W.}
- \label{fig:1-xval2}
-\end{figure} 
-
-
-
-\paragraph{Image-to-text retrieval}
-We carry out image-to-text search on the test images(which are relevant to the querie concept) and visualize the results of several images, note that even thought the final evaluation on the whole test set is relatively low, as it is also reported in the reference \citep{cca0}, we can see that images from some of the classes have very good retrieval results:
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/I2ITarc1/RETi2t}
- }
-% \caption{}
+ \includegraphics[width=1.1\textwidth]{figures/I2T-arc1}
  \label{fig:1-arc1}
-\end{figure} 
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/I2ITmontb/RETi2t}
  }
 % \caption{}
- \label{fig:1-montb1}
+\label{fig:inria-dataset}
 \end{figure} 
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/I2ITmontb1/RETi2t}
+ \includegraphics[width=1.1\textwidth]{figures/I2T-montb1}
+ \label{fig:1-arc1}
  }
 % \caption{}
- \label{fig:1-montb2}
+\label{fig:inria-dataset}
 \end{figure} 
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/I2ITkeybs/RETi2t}
+ \includegraphics[width=1.1\textwidth]{figures/I2T-montb2}
+ \label{fig:1-arc1}
+ }
+% \caption{}
+\label{fig:inria-dataset}
+\end{figure} 
+
+\begin{figure}[H]
+\centering
+\makebox[.4\textwidth][c]{         
+ \includegraphics[width=1.1\textwidth]{figures/I2T-monts1}
+ \label{fig:monts1}
  }
  %\caption{Four examples of image-to-text search on test data.}
- \label{fig:i2tkeybs}
-\end{figure} 
-
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/I2ITapple1/RETi2t}
- \label{fig:1-apple1}
- }
- \caption{Five examples of \textbf{image-to-text} search on test data: the words correspond to the trained text vectors that have the highest similarities with the test image's visual feature; the scores is the count of occurrences of such each word.}
 \label{fig:i2t}
 \end{figure} 
 
 
-\paragraph{Image-to-image retrieval}
+\begin{figure}[H]
+\centering
+\makebox[.4\textwidth][c]{         
+ \includegraphics[width=1.1\textwidth]{figures/I2T-apple135}
+ \label{fig:1-arc1}
+ }
+ \caption{Five examples of image-to-text search on test data: the words correspond to the trained text vectors that have the highest similarities with the test image's visual feature; the scores is the count of occurrences of such each word.}
+\label{fig:i2t}
+\end{figure} 
 
-For some of the query images in the figure (\ref{fig:i2t}) and we visualize the images in the test database that have the 36 top ranked scores w.r.t the similarity measure $S$. Note that in the later evaluation phase, only the first 20 are kept in order to be consistent to the evaluation measure of the reference article, we will choose only the first 20 images to compute the precision P@20.
+
+%\subsection{Image-to-image search on test data}
+
+For three images in the figure (\ref{fig:i2t}) and we visualize the images in training set that correspond to the top ranked texts:
 
 %%
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=.15\textwidth]{figures/I2ITarc1/RETi2i-r}
+ \includegraphics[width=0.15\textwidth]{figures/I2I-arc1all-r}
+ \label{fig:i2iappler}
  }
- \caption{Query image for Image-to-image retrieval.}
- \label{fig:i2iarcr}
+  %\caption{}
+\label{fig:inria-dataset}
 \end{figure} 
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1\textwidth]{figures/I2ITarc1/RETi2i}
+ \includegraphics[width=1\textwidth]{figures/I2I-arc1all}
+ \label{fig:i2iapple1}
  }
- \caption{36 top ranked images retrieved. Some (even many) images with different file names have the \textbf{same image content} or very similar content.}
- \label{fig:i2iarc1}
+% \caption{}
+\label{fig:inria-dataset}
 \end{figure} 
-%%
-
 %%
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=.15\textwidth]{figures/I2ITmontb1/RETi2i-r}
+ \includegraphics[width=0.15\textwidth]{figures/I2I-apple1all-r}
+ \label{fig:i2iappler}
  }
- \caption{Query image for Image-to-image retrieval.}
- \label{fig:i2imontbr}
-\end{figure} 
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1\textwidth]{figures/I2ITmontb1/RETi2i}
- }
- \caption{36 top ranked images retrieved. Some (even many) images with different file names have the \textbf{same image content} or very similar content.}
- \label{fig:i2imontb1}
-\end{figure} 
-%%
-
-%%
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=.15\textwidth]{figures/I2ITkeybs/RETi2i-r}
- }
- \caption{Query image for Image-to-image retrieval.}
- \label{fig:i2ikeybsr}
+  %\caption{}
+\label{fig:inria-dataset}
 \end{figure} 
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1\textwidth]{figures/I2ITkeybs/RETi2i}
+ \includegraphics[width=1\textwidth]{figures/I2I-apple1all}
+ \label{fig:i2iapple1}
  }
- \caption{36 top ranked images retrieved. Some (even many) images with different file names have the \textbf{same image content} or very similar content.}
- \label{fig:i2ikeybs1}
+% \caption{}
+\label{fig:inria-dataset}
 \end{figure} 
-%%
 
+%\begin{figure}[H]
+%\centering
+%\makebox[.4\textwidth][c]{         
+% \includegraphics[width=0.7\textwidth]{figures/I2I-APR-apple1all}
+% \label{fig:i2iapple1apr}
+% }
+    % \caption{}
+%\label{fig:i2iapple}
+%\end{figure} 
+%% monts1
 
+\begin{figure}[H]
+\centering
+\makebox[.4\textwidth][c]{         
+ \includegraphics[width=0.15\textwidth]{figures/I2I-monts1all-r}
+ \label{fig:i2iappler}
+ }
+ \caption{}
+\label{fig:inria-dataset}
+\end{figure} 
 
-
+\begin{figure}[H]
+\centering
+\makebox[.4\textwidth][c]{         
+ \includegraphics[width=1\textwidth]{figures/I2I-monts1all}
+ \label{fig:i2iapple1}
+ }
+% \caption{}
+\label{fig:inria-dataset}
+\end{figure} 
 
 %\begin{figure}[H]
 %\centering
@@ -424,83 +414,37 @@ For some of the query images in the figure (\ref{fig:i2t}) and we visualize the 
 %\label{fig:i2iapple}
 %\end{figure} 
 
-\paragraph{Text-to-image retrieval}
+\subsection{Text-to-image search on test data}
 We carry out the text-to-image search on the same test data and visualize the top ranked images:
 
 
 By typing the follwoing texts, we have: 
 
-"london tower bridge": 
+" metro paris plan": 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/T2Itowerbridge/ranksT2I}
- \label{fig:1-london}
+ \includegraphics[width=1.1\textwidth]{figures/ranksT2I-metroparis}
+ \label{fig:1-metro}
  }
- \caption{Text to image: 36 top ranked images retrieved: "london tower bridge".}
-%\label{fig:inria-dataset}
+% \caption{}
+\label{fig:inria-dataset}
 \end{figure} 
 
-- "mont blanc":
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/T2Imontb/ranksT2I}
- %\label{fig:1-metro}
- }
- \caption{Text to image: 36 top ranked images retrieved: "mont blanc".}
-%\label{fig:inria-dataset}
-\end{figure} 
-
-- "ordinateur portable":
+And "mont blanc":
 
 \begin{figure}[H]
 \centering
 \makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/T2Ipc/ranksT2I}
- %\label{fig:1-metro}
+ \includegraphics[width=1.1\textwidth]{figures/ranksT2I_periodic}
+ \label{fig:1-metro}
  }
- \caption{Text to image: 36 top ranked images retrieved: "ordinateur portable".}
-%\label{fig:inria-dataset}
+% \caption{}
+\label{fig:inria-dataset}
 \end{figure} 
 
-- "boston celtics":
-
-\begin{figure}[H]
-\centering
-\makebox[.4\textwidth][c]{         
- \includegraphics[width=1.1\textwidth]{figures/T2Iceltics/ranksT2I}
- %\label{fig:1-metro}
- }
- \caption{Text to image: 36 top ranked images retrieved: "boston celtics".}
-%\label{fig:inria-dataset}
-\end{figure} 
 
 \section{Evaluations and conclusion}
- Finally, we added a third view (\textbf{K} for keywords or ground truth, as each image in the dataset is originated from one querie of keywords) in training and we represent the evaluation results using the precision @20 for the retrieval tasks after the two and three view CCA trainings:
- 
- 
-\begin{table}[H]
-\caption{Precision @20 for different multi-view models.}
-\centering
-\begin{tabular}{c c c c}
-\hline\hline
-method & I2I & T2I & K2I \\ [0.5ex] % inserts table %heading
-\hline
-CCA: V+T & 12.73   & 9.84 & - \\
-CCA: V+K &  14.23  & - & 41.65 \\
-CCA: V+T+K &  14.35  &  13.11 & 41.24 \\ [1ex]
-\hline
-\end{tabular}
-\label{table:hmm}
-\end{table}
- 
-In comparison with the evaluations of \citep{cca0} on the INRIA-webqueries dataset, we find that the present results are very similar or even 1-3 percents lower than the results reported in this reference.
-However, as we do not further test on the text vector representations with the phrased word2vec dictionary and the total number of canonical dimensions are just   chosen as optimum of a small set of values, there is still space to improve the performance.
-
-
- 
  
 \bibliographystyle{agu04}
 \footnotesize
