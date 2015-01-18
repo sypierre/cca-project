@@ -23,7 +23,8 @@ clearvars -except inriaPBA net inria_lobj tagwords ...
     inria_objft Tfeat2  Tfeat1 inria_objfi idx_bad  idx_badT ...
     idx_bads  idx_goods  X  T  Wall  W  Dall  D  Z  ...
     semantic  cls  Wx  Wy  LAM Zw  invU ccaV ccaT NSS nss nsst relevance ...
-    rel_train rel_all rel_test rel_test_ids rel_cls_intras;
+    rel_train rel_all rel_test rel_test_ids rel_cls_intras rel_testxval...
+    rel_testeval;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -79,12 +80,12 @@ else
 end
 
 opt.docca = 0;
-opt.d = 300; %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
+opt.d = 256; %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
 opt.cano_vs = [1,2]; % canonical direction ids
 
 opt.I2T = 1;
 opt.periodic = 0;
-opt.i2i = 1;
+opt.i2i = 0; % i2i: doptimal = 128
 i2tcontrol = [0 101 rel_cls_intras{102}( 10 )]; % 57
 % we may enable rel_test_cl{:} to replace <nsst> !
 opt.oldZ = 1;
@@ -277,7 +278,9 @@ for ee = opt.EVA1 : opt.EVA2
             % %     saveas( figure(102), [root_fig,'I2I-APRnew.png']);
             for i = 1 : length(xx)
                   
-                rhon = rhon +  ( inria_objf{ xx(i) }.id_class == opt.cl ) ;
+%                 rhon = rhon +  ( inria_objf{ xx(i) }.id_class == opt.cl ) ;
+                rhon = rhon +  ( inria_objfi( xx(i),1 ) == opt.cl ) ;
+
             end
             disp(['--- partially: ',num2str(rhon/(opt.i2iN) ) ]);
             rho = rho + rhon;
