@@ -12,9 +12,10 @@ if ~ exist('net', 'var')
     Tfeat2 = tph.Tfeature;
     % matObj = matfile('inria_objf-vfeatsi.mat');
     % whos(matObj)
-    
     ts = load('inria_objf-tfeaturesi.mat');
     Tfeat1 = ts.Tfeature;
+    
+    cls = unique( inria_objfi(:,1) );
     break;
 end
 
@@ -24,7 +25,7 @@ clearvars -except inriaPBA net inria_lobj tagwords ...
     idx_bads  idx_goods  X  T  Wall  W  Dall  D  Z  ...
     semantic  cls  Wx  Wy  LAM Zw  invU ccaV ccaT NSS nss nsst relevance ...
     rel_train rel_all rel_test rel_test_ids rel_cls_intras rel_testxval...
-    rel_testeval;
+    rel_testeval textSEM VSEM VSEMb;
 close all;
 
 inria_imgdir = './data/webqueries/images/';
@@ -42,7 +43,7 @@ root_fig = './PGM-report/figures/';
 N = size(Vfeature,1);
 
 if ~exist('idx_bads', 'var')
-    idx_bads = union(inria_objfv.idx_bad, inria_objft.idx_badT );
+    idx_bads = union(idx_bad, idx_badT );
     idx_goods = setdiff((1:N) , idx_bads);
 end
 
@@ -169,8 +170,8 @@ if opt.docca %|| ~exist('X')
     tcca = toc(t1);
     disp(['CCA time : ', num2str(tcca)]);
     
-    save([root_resultsNEW,'NEWcca_ALL_tv1000.mat'],...
-        'Wx','Wy','LAM','Zw','invU','W','Dall','D','Z');
+    save([root_resultsNEW,'NEWNEWcca_ALL_tv1000.mat'],...
+        'Wx','Wy','LAM','Wall','Dall');
 end
 
 %% similarity measure:
@@ -209,14 +210,14 @@ Z0eval{2} = [TFeval(:,1:q) *W0{2} , TFeval(:,end) ];%(:, 1:opt.d );
 %% Validation : choose dimensionality of W
 dimensions = [64  128  200  256 280 300 310 380 512]; %round( linspace(64,664, 20) ); %[64  128  200  256  300  512]; %2.^[6:9];
 
-opt.i2i = 0;
+opt.i2i = 1;
 if opt.i2i 
     savech = 'I2I';
 else
     savech = 'I2T';
 end
 
-dd = 4;
+dd = 2;
 opt.d = dimensions(dd); %300 400,200;100;%10; %10 3 20 dimension of the latent variable z
     
     disp(['Dimensionality of W: ',int2str(opt.d),' for I2T2I...']);
@@ -225,9 +226,9 @@ opt.d = dimensions(dd); %300 400,200;100;%10; %10 3 20 dimension of the latent v
     W{2} = W0{1}(: , 1:opt.d);
     
     D = Dall(1:opt.d, 1:opt.d);
-    
-    Z{1} = [Zt{1}(:, 1 : opt.d), Zt{1}(:,end)]; % Z0
-    Z{2} = [Zt{2}(:, 1 : opt.d), Zt{2}(:,end)];
+    tmpz = Zt; % Z0;
+    Z{1} = [tmpz{1}(:, 1 : opt.d), tmpz{1}(:,end)]; % Z0
+    Z{2} = [tmpz{2}(:, 1 : opt.d), tmpz{2}(:,end)];
     
     Zval{1} = [ Z0val{1}(:,1:opt.d), Z0val{1}(:,end) ];
     Zval{2} = [ Z0val{2}(:,1:opt.d), Z0val{2}(:,end) ];
@@ -235,7 +236,7 @@ opt.d = dimensions(dd); %300 400,200;100;%10; %10 3 20 dimension of the latent v
     Zeval{1} = [ Z0eval{1}(:,1:opt.d), Z0eval{1}(:,end) ];
     Zeval{2} = [ Z0eval{2}(:,1:opt.d), Z0eval{2}(:,end) ];
     
-    % plot_ccaNEW(nss,Z, Zw, opt, 1, semantic);
+%     plot_ccaNEW(nss,Z, Z, opt, 1, semantic);
     
     % break;
     %% RETRIVAL of cl intra
@@ -279,11 +280,16 @@ opt.d = dimensions(dd); %300 400,200;100;%10; %10 3 20 dimension of the latent v
 %         valscore( clid+1 ) = simsid/simsSUM;
 %         disp(['---validation score of class ', int2str(clid),' is: ',num2str(valscore(clid+1))] );
     end
+    
     valinds = find(~isnan(Rho));
-    Rho = Rho(valinds);
-    Wei = Wei(valinds);
-    figure(22); subplot(211);  bar(Rho);
-    subplot(212); bar(Wei);
+    Rho(isnan(Rho)) = 0;
+     [maxeval, maxinds] = sort(Rho,'descend');
+    Rhoo = Rho(valinds);
+    Weii = Wei(valinds);
+    figure(22); subplot(211);  bar(Rhoo);
+    subplot(212); bar(Weii);
+    EVAL = Weii*Rhoo'/sum(Weii);
+    disp(['EVAL: ', num2str(EVAL)]);
 %     VALSCORE(dd) = sum(valscore);
 %     disp(['VALIDATION SCORE of dd =  ', int2str(opt.d),' is: ',num2str(VALSCORE(dd))] );
 %     

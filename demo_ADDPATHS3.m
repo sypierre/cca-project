@@ -41,3 +41,4 @@ load('inria_idxbads.mat');
 
 load('inria_semantics.mat');
 
+load('inria_relevances.mat');

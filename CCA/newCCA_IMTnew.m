@@ -1,8 +1,9 @@
-function [X,T, Wx, Wy,LAM, Wall,Dall] = newCCA_IMTnew(ccaV,ccaT,opt)
+function [X,T, Wx, Wy,LAM, Wall,Dall] = newCCA_IMTnew(ccaV,ccaT,  opt)
 
 %% CCA - organization
 
 X = ccaV(:, 1:end-1); T = ccaT(:, 1:end-1);
+%SEM = ccaS(:,1:end-1);
 
 p = size(X,2);
 disp(['image feature space : ',int2str(p),' dimensions']);
